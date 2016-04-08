@@ -1,20 +1,33 @@
-- try simple Bayesian neural nets
-  - deterministic weights until final layer (adaptive basis function regression)
-  - writing full bayesian neural net may be simpler?
-- wavelet approximation
-- Don't resample/use factors when you predict
-- Sometimes re-evaluate even if variance is low
-- Use single score/factor instead of many
-- What is going on (as a function of all parameters)? Make some figures?
-- Given parameters that work well, do we actually see an improvement in speed over slowBinomial?
-  What is the tradeoff between speed gain and loss in accuracy?
-- Interesting dependent variables:
-  - Speed
-  - Accuracy
-    - Accuracy over time / over number of function evaluations
-- generalize to multiple arguments; different function approximators
-- use foreach2
-- don't always condition on all data - randomly (?) select fixed-size subset
-- optimize variance of guide distribution as well?
-- maybe: replace mean and variance with fast js versions
+- Improvements to the system (Andreas)
+  - Don't resample/use factors when you predict (to avoid seemingly low variance due to particle collapse)
+  - Use single score/factor instead of many
+
+- Make figures that illustrate performance on slowBinomial (Jason)
+  - error as a function of time (different curves for different parameter settings)
+  - to explore space of parameters, could do grid search or random sampling
+  - given parameters that work well, do we actually see an improvement in speed over slowBinomial?
+    What is the tradeoff between speed gain and loss in accuracy?
+
+- MH will add RSA model that illustrates inferring lambda
+- MH will plot The Big Sum -- p(d|m) -- as a function of lambda
+
+
+- Then we'll think about approximating families that could deal with this
+  - e.g. try simple Bayesian neural nets
+    - deterministic weights until final layer (adaptive basis function regression)
+    - writing full bayesian neural net may be simpler?
+  - e.g. wavelet approximation
+
+- We'll have to do some profiling / think about how to make it fast
+  - first, figure out what's slow
+  - e.g. don't always condition on all data when doing parameter optimization -
+    randomly (?) select fixed-size subset
+  - e.g. replace mean and variance with fast js versions
+  - e.g. use foreach2
+
+
+Later:
 - explore maximum likelihood version (without prior)
+- generalize to multiple arguments; different function approximators
+- optimize variance of guide distribution as well?
+- measuring how well we're doing

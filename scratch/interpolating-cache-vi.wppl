@@ -84,9 +84,9 @@ var interCache = function(slowFunc) {
     _.assign(state, { guideParams: newParams });
   }
 
-  var fastFunc  = function(arg) {
+  var fastFunc = function(arg) {
 
-    var distOnReturnVals = stochasticSurrogate(arg);
+    var distOnReturnVals = stochasticSurrogate(arg);  // don't condition on data here
     var returnValMean = mean(distOnReturnVals);
     var returnValVariance = variance(distOnReturnVals);
 
@@ -101,6 +101,7 @@ var interCache = function(slowFunc) {
 
     if (returnValVariance > threshold) {
       var trueReturnVal = slowFunc(arg);
+      // need new smc step here (including data)
       state.data.inputs.push(arg);
       state.data.outputs.push(trueReturnVal);
       updateParams(arg, trueReturnVal);

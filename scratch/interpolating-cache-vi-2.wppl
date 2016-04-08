@@ -30,7 +30,7 @@ var variance = function(erp) {
 };
 
 
-var interCache = function(slowFunc, params) {
+var interCache = function(slowFunc, options) {
 
   var state = {
     data: {
@@ -41,8 +41,8 @@ var interCache = function(slowFunc, params) {
   };
 
   var defaultParams = {
-    offset: params.defaultOffset, //0,
-    slope: params.defaultSlope //1
+    offset: options.defaultOffset, //0,
+    slope: options.defaultSlope //1
   };  
 
   
@@ -53,11 +53,11 @@ var interCache = function(slowFunc, params) {
     var slopeGuideMean = param(defaultParams.slope);
 
     // Priors on offset and slope
-    var offset = sample(gaussianERP, [params.offsetGaussianMean, params.offsetGaussianVar], { // 0, 5
-      guide: [gaussianERP, [offsetGuideMean, params.offsetGuideVar]] // 0.5
+    var offset = sample(gaussianERP, [options.offsetGaussianMean, options.offsetGaussianVar], { // 0, 5
+      guide: [gaussianERP, [offsetGuideMean, options.offsetGuideVar]] // 0.5
     });
-    var slope = sample(gaussianERP, [params.slopeGaussianMean, params.slopeGaussianVar], { // 0, 5
-      guide: [gaussianERP, [slopeGuideMean, params.slopeGuideVar]] // 0.5
+    var slope = sample(gaussianERP, [options.slopeGaussianMean, options.slopeGaussianVar], { // 0, 5
+      guide: [gaussianERP, [slopeGuideMean, options.slopeGuideVar]] // 0.5
     });
 
     // Create function parameterized by offset and slope
@@ -69,7 +69,7 @@ var interCache = function(slowFunc, params) {
     // Soft conditioning on our input-data
     map2(
       function(input, output){
-        factor(gaussianERP.score([f(input), params.penaltyVariance], output)); // 2
+        factor(gaussianERP.score([f(input), options.penaltyVariance], output)); // 2
       },
       state.data.inputs,
       state.data.outputs);
@@ -87,7 +87,7 @@ var interCache = function(slowFunc, params) {
         // console.log(out);
         return out;
       }, {
-        particles: params.returnValuesParticles, // 1000
+        particles: options.returnValuesParticles, // 1000
         params: state.guideParams
       });
   }
@@ -97,8 +97,8 @@ var interCache = function(slowFunc, params) {
   var updateParams = function(x, y) {
     // console.log('Updating params based on datapoint', x, y)
     var newParams = Optimize(distOnFuncs, {
-      steps: params.optimizationSteps, // 1000
-      method: {adagrad: {stepSize: params.stepSize }}, // 0.01
+      steps: options.optimizationSteps, // 1000
+      method: {adagrad: {stepSize: options.stepSize }}, // 0.01
       estimator: 'ELBO',
       params: state.guideParams
     });
@@ -113,7 +113,7 @@ var interCache = function(slowFunc, params) {
     var returnValMean = mean(distOnReturnVals);
     var returnValVariance = variance(distOnReturnVals);
 
-    var threshold = params.threshold; //.1
+    var threshold = options.threshold; //.1
 
     // console.log({
     //   arg: arg,
@@ -176,13 +176,16 @@ var accuracy = function(ans) {
 // var file = webpplCsv.openFile('csv/threshold.csv')
 webpplCsv.writeCSV(map(function(x) {
   var fastBinomialMean = interCache(slowBinomialMean, {
+    // less important:
     defaultOffset: 0,
     defaultSlope: 1,
     offsetGaussianMean: 0,
     offsetGaussianVar: 5,
-    offsetGuideVar: 0.5,
     slopeGaussianMean: 0,
     slopeGaussianVar: 5,
+
+    // more important:
+    offsetGuideVar: 0.5,    
     slopeGuideVar: 0.5,
     penaltyVariance: 2,
     returnValuesParticles: 1000,
