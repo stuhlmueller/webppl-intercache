@@ -1,0 +1,20 @@
+- try simple Bayesian neural nets
+  - deterministic weights until final layer (adaptive basis function regression)
+  - writing full bayesian neural net may be simpler?
+- wavelet approximation
+- Don't resample/use factors when you predict
+- Sometimes re-evaluate even if variance is low
+- Use single score/factor instead of many
+- What is going on (as a function of all parameters)? Make some figures?
+- Given parameters that work well, do we actually see an improvement in speed over slowBinomial?
+  What is the tradeoff between speed gain and loss in accuracy?
+- Interesting dependent variables:
+  - Speed
+  - Accuracy
+    - Accuracy over time / over number of function evaluations
+- generalize to multiple arguments; different function approximators
+- use foreach2
+- don't always condition on all data - randomly (?) select fixed-size subset
+- optimize variance of guide distribution as well?
+- maybe: replace mean and variance with fast js versions
+- explore maximum likelihood version (without prior)

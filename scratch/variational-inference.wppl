@@ -1,0 +1,74 @@
+// 0. Model
+
+// var model = function() {
+//   var x = sample(gaussianERP, [5, 1]);
+//   factor(-10 * (x - 1) * (x - 1));
+//   return x;
+// };
+
+// SMC(model, { particles: 100 }).print();
+
+
+// 1. Model with guide distribution
+
+var model = function() {
+
+  var mean = param(0);
+
+  var x = sample(gaussianERP, [5, 1], {
+    guide: [gaussianERP, [mean, 1]]
+  });
+
+  factor(-10 * (x - 3) * (x - 3));
+
+  return x;
+
+};
+
+
+// 2. Inference, ignoring guide distribution
+
+// SMC(model, {
+//   particles: 100,
+//   ignoreGuide: false
+// }).print();
+
+
+// 3. Optimization of parameters for guide distribution
+
+var params = Optimize(model, {
+  steps: 1000,
+  method: {adagrad: {stepSize: 0.1}},
+  estimator: 'ELBO'
+});
+
+console.log(params);
+
+
+// 4. Sampling from model using guide distribution with optimized parameters
+
+// SMC(model, {
+//   particles: 100,
+//   params: params
+// }).print();
+
+
+// 5. Doing more optimization, starting from where we left off
+//    We could have added more data to the model before we do this!
+
+var params2 = Optimize(model, {
+  steps: 1000,
+  method: {adagrad: {stepSize: 0.01}},
+  estimator: 'ELBO',
+  params: params
+});
+
+console.log(params2);
+
+
+// 6. Sampling from model using further-optimized parameters
+
+SMC(model, {
+  particles: 100,
+  params: params2
+}).print();
