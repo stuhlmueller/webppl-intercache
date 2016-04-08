@@ -1,0 +1,206 @@
+// webppl interpolating-cache-vi.wppl --require webppl-timeit
+
+// Meet Thu at 2pm
+
+// Things to do:
+// - What is going on (as a function of all parameters)? Make some figures?
+// - Given parameters that work well, do we actually see an improvement in speed over slowBinomial?
+//   What is the tradeoff between speed gain and loss in accuracy?
+// - Interesting dependent variables:
+//   - Speed
+//   - Accuracy
+//     - Accuracy over time / over number of function evaluations
+// - Andreas: look into how to write data from webppl to csv files
+
+// Next:
+// - use foreach2
+// - don't always condition on all data - randomly (?) select fixed-size subset
+// - optimize variance of guide distribution as well?
+// - fix: current use of globalStore means that we can only use interCache once per program
+// - maybe: replace mean and variance with fast js versions
+// - explore maximum likelihood version (without prior)
+
+var mean = function(erp) {
+  return expectation(erp, function(x) {return x;});
+};
+
+var variance = function(erp) {
+  var m = mean(erp);
+  return expectation(erp, function(x) { return (x - m) * (x - m); });
+};
+
+
+var interCache = function(slowFunc, params) {
+
+  var state = {
+    data: {
+      inputs: [],
+      outputs: []
+    },
+    guideParams: {}
+  };
+
+  var defaultParams = {
+    offset: params.defaultOffset, //0,
+    slope: params.defaultSlope //1
+  };  
+
+  
+  var distOnFuncs = function() {
+
+    // Define slope/offset and parameterize based on guide params
+    var offsetGuideMean = param(defaultParams.offset);
+    var slopeGuideMean = param(defaultParams.slope);
+
+    // Priors on offset and slope
+    var offset = sample(gaussianERP, [params.offsetGaussianMean, params.offsetGaussianVar], { // 0, 5
+      guide: [gaussianERP, [offsetGuideMean, params.offsetGuideVar]] // 0.5
+    });
+    var slope = sample(gaussianERP, [params.slopeGaussianMean, params.slopeGaussianVar], { // 0, 5
+      guide: [gaussianERP, [slopeGuideMean, params.slopeGuideVar]] // 0.5
+    });
+
+    // Create function parameterized by offset and slope
+    var f = function(x) {
+      var y = x * slope + offset;
+      return y;
+    };
+
+    // Soft conditioning on our input-data
+    map2(
+      function(input, output){
+        factor(gaussianERP.score([f(input), params.penaltyVariance], output)); // 2
+      },
+      state.data.inputs,
+      state.data.outputs);
+
+    return f;
+  };
+
+  
+  // Given argument, return distribution on return values
+  var stochasticSurrogate = function(arg) {
+    return SMC(
+      function(){
+        var f = distOnFuncs();
+        var out = f(arg);
+        // console.log(out);
+        return out;
+      }, {
+        particles: params.returnValuesParticles, // 1000
+        params: state.guideParams
+      });
+  }
+
+  // Update state.guideParams using variational inference (based on all data points observed so far,
+  // including new x-y pair)
+  var updateParams = function(x, y) {
+    // console.log('Updating params based on datapoint', x, y)
+    var newParams = Optimize(distOnFuncs, {
+      steps: params.optimizationSteps, // 1000
+      method: {adagrad: {stepSize: params.stepSize }}, // 0.01
+      estimator: 'ELBO',
+      params: state.guideParams
+    });
+    //console.log(state.guideParams, '->', newParams)
+    _.assign(state, { guideParams: newParams });
+  }
+
+  var fastFunc  = function(arg, results) {
+
+    var distOnReturnVals = stochasticSurrogate(arg);
+    // distOnReturnVals.print();
+    var returnValMean = mean(distOnReturnVals);
+    var returnValVariance = variance(distOnReturnVals);
+
+    var threshold = params.threshold; //.1
+
+    // console.log({
+    //   arg: arg,
+    //   mean: returnValMean,
+    //   variance: returnValVariance,
+    //   greatherThanThreshold: returnValVariance > threshold
+    // });
+
+    if (returnValVariance > threshold) {
+      var trueReturnVal = slowFunc(arg);
+      state.data.inputs.push(arg);
+      state.data.outputs.push(trueReturnVal);
+      updateParams(arg, trueReturnVal);
+      return trueReturnVal;
+    } else {
+      results.unshift(accuracy(returnValMean));
+      return returnValMean;
+    }
+  };
+
+  return fastFunc;
+  
+};
+
+
+// --------------------------------------------------------------------
+
+var N = 10;
+
+var slowBinomial = function(p) {
+  return Enumerate(function(){
+    var xs = repeat(N, function(){ return flip(p); });
+    return sum(xs);
+  });
+};
+
+// this is the function we want to speed up by caching
+var slowBinomialMean = function(p) {
+  return mean(slowBinomial(p));
+};
+
+
+var inferBinomialP = function(binomialMean) {
+  var p = uniform(0, 1);
+  var m = binomialMean(p);
+  //condition(m < 3);  // we know that the mean is < 3
+  return m;
+}
+
+var profile = function(label, binomialMean, results) {
+  //console.log('\n' + label + ':');
+  return timeit(function(){
+    Rejection(function(){return binomialMean(uniform(0, 1), results);}, 50); // .print();
+  });
+};
+
+var accuracy = function(ans) {
+  return Math.abs(ans - 5) / 5;
+}
+// var file = webpplCsv.openFile('csv/threshold.csv')
+webpplCsv.writeCSV(map(function(x) {
+  var fastBinomialMean = interCache(slowBinomialMean, {
+    defaultOffset: 0,
+    defaultSlope: 1,
+    offsetGaussianMean: 0,
+    offsetGaussianVar: 5,
+    offsetGuideVar: 0.5,
+    slopeGaussianMean: 0,
+    slopeGaussianVar: 5,
+    slopeGuideVar: 0.5,
+    penaltyVariance: 2,
+    returnValuesParticles: 1000,
+    optimizationSteps: 1000,
+    stepSize: .01,
+    threshold: x
+  });
+  var results = [];
+  var time = profile('fastBinomialMean', fastBinomialMean, results);
+  return [x, time.runtimeInMilliseconds].concat(results);
+}, [.05, .1, .5, 1, 2, 4]), 'csvTime/threshold.csv');
+// webpplCsv.closeFile();
+//profile('slowBinomialMean', slowBinomialMean);
+// Rejection(function() {
+//   var d = SMC(function() {
+//     // console.log('hi')
+//     return sample(gaussianERP, [0, 2]);
+//   }, { particles: 10 });
+//   d.print();
+//   return mean(d);
+// }, 3).support().length;
