@@ -24,7 +24,7 @@ var interCache = function(slowFunc) {
   };  
 
   
-  var distOnFuncs = function() {
+  var distOnFuncs = function(disableConditioning) {
 
     // Define slope/offset and parameterize based on guide params
     var offsetGuideMean = param(defaultParams.offset);
@@ -44,14 +44,16 @@ var interCache = function(slowFunc) {
       return y;
     };
 
-    // Soft conditioning on our input-data
-    var scores = map2(
-      function(input, output){
-        return gaussianERP.score([f(input), 2], output);
-      },
-      state.data.inputs,
-      state.data.outputs);
-    factor(sum(scores));
+    if (!disableConditioning) {
+      // Soft conditioning on our input-data
+      var scores = map2(
+        function(input, output){
+          return gaussianERP.score([f(input), 2], output);
+        },
+        state.data.inputs,
+        state.data.outputs);
+      factor(sum(scores));
+    }
     
     return f;
   };
@@ -61,7 +63,7 @@ var interCache = function(slowFunc) {
   var stochasticSurrogate = function(arg) {
     return SMC(
       function(){
-        var f = distOnFuncs();
+        var f = distOnFuncs(true);
         return f(arg);
       }, {
         particles: 1000, // ?
@@ -89,7 +91,7 @@ var interCache = function(slowFunc) {
     var returnValMean = mean(distOnReturnVals);
     var returnValVariance = variance(distOnReturnVals);
 
-    var threshold = .1; // fix
+    var threshold = 1.0; // fix
 
     console.log({
       arg: arg,
