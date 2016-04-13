@@ -1,0 +1,14 @@
+{
+  "name": "webppl-intercache",
+  "version": "0.0.1",
+  "description": "WebPPL library for interpolating (Bayesian) caching",  
+  "webppl": {
+    "wppl": ["src/library.wppl"]
+  },
+  "main": "src/library.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stuhlmueller/webppl-intercache.git"
+  },
+  "homepage": "https://github.com/stuhlmueller/webppl-intercache"
+}
