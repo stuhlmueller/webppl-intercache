@@ -1,1 +1,35 @@
+var N = 11;
+
+var slowBinomial = function(p) {
+  return Enumerate(function(){
+    var xs = repeat(N, function(){ return flip(p); });
+    return sum(xs);
+  });
+};
+
+// this is the function we want to speed up by caching
+var slowBinomialMean = function(p) {
+  return mean(slowBinomial(p));
+};
+
+var fastBinomialMean = interCache(slowBinomialMean);
+
+var inferBinomialP = function(binomialMean) {
+  var p = uniform(0, 1);
+  var m = binomialMean(p);
+  condition(m < 3);  // we know that the mean is < 3
+  return p;
+}
+
+var profile = function(label, binomialMean) {
+  console.log('\n' + label + ':');
+  console.log(timeit(function(){
+    Rejection(function(){return inferBinomialP(binomialMean);}, 20); // .print();
+  }).runtimeInMilliseconds.toString() + 'ms');
+}
+
+profile('fastBinomialMean', fastBinomialMean);
+profile('slowBinomialMean', slowBinomialMean);
+
+
 console.log('test.wppl done.');

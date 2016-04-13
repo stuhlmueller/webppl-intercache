@@ -1,1 +1,119 @@
+// webppl interpolating-cache-vi.wppl --require webppl-timeit
+
+var mean = function(erp) {
+  return expectation(erp, function(x) {return x;});
+};
+
+var variance = function(erp) {
+  var m = mean(erp);
+  return expectation(erp, function(x) { return (x - m) * (x - m); });
+};
+
+
+var interCache = function(slowFunc) {
+
+  var state = {
+    data: {
+      inputs: [],
+      outputs: []
+    },
+    guideParams: {}
+  };
+
+  var defaultParams = {
+    offset: 0,
+    slope: 1
+  };  
+
+  
+  var distOnFuncs = function() {
+
+    // Define slope/offset and parameterize based on guide params
+    var offsetGuideMean = param(defaultParams.offset);
+    var slopeGuideMean = param(defaultParams.slope);
+
+    // Priors on offset and slope
+    var offset = sample(gaussianERP, [0, 5], {
+      guide: [gaussianERP, [offsetGuideMean, 0.5]]
+    });
+    var slope = sample(gaussianERP, [0, 5], {
+      guide: [gaussianERP, [slopeGuideMean, 0.5]]
+    });
+
+    // Create function parameterized by offset and slope
+    var f = function(x) {
+      var y = x * slope + offset;
+      return y;
+    };
+
+    // Soft conditioning on our input-data
+    map2(
+      function(input, output){
+        factor(gaussianERP.score([f(input), 2], output));
+      },
+      state.data.inputs,
+      state.data.outputs);
+
+    return f;
+  };
+
+  
+  // Given argument, return distribution on return values
+  var stochasticSurrogate = function(arg) {
+    return SMC(
+      function(){
+        var f = distOnFuncs();
+        return f(arg);
+      }, {
+        particles: 1000, // ?
+        params: state.guideParams
+      });
+  }
+
+  // Update state.guideParams using variational inference (based on all data points observed so far,
+  // including new x-y pair)
+  var updateParams = function(x, y) {
+    console.log('Updating params based on datapoint', x, y)
+    var newParams = Optimize(distOnFuncs, {
+      steps: 1000,
+      method: {adagrad: {stepSize: 0.01}},
+      estimator: 'ELBO',
+      params: state.guideParams
+    });
+    console.log(state.guideParams, '->', newParams)
+    _.assign(state, { guideParams: newParams });
+  }
+
+  var fastFunc = function(arg) {
+
+    var distOnReturnVals = stochasticSurrogate(arg);  // don't condition on data here
+    var returnValMean = mean(distOnReturnVals);
+    var returnValVariance = variance(distOnReturnVals);
+
+    var threshold = .1; // fix
+
+    console.log({
+      arg: arg,
+      mean: returnValMean,
+      variance: returnValVariance,
+      greatherThanThreshold: returnValVariance > threshold
+    });
+
+    if (returnValVariance > threshold) {
+      var trueReturnVal = slowFunc(arg);
+      // need new smc step here (including data)
+      state.data.inputs.push(arg);
+      state.data.outputs.push(trueReturnVal);
+      updateParams(arg, trueReturnVal);
+      return trueReturnVal;
+    } else {
+      return returnValMean;
+    }
+  };
+
+  return fastFunc;
+  
+};
+
+
 console.log('library.wppl loaded.');

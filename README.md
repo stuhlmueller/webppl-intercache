@@ -6,5 +6,5 @@ To test, run:
 
 ~~~~
 cd webppl-intercache
-webppl tests/test.wppl --require .
+webppl tests/test.wppl --require webppl-timeit --require .
 ~~~~
