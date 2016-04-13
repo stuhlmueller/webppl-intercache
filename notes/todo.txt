@@ -1,7 +1,7 @@
 - Improvements to the system (Andreas)
-  - Turn into webppl package
+  x Turn into webppl package
   - Don't resample/use factors when you predict (to avoid seemingly low variance due to particle collapse)
-  - Use single score/factor instead of many
+  x Use single score/factor instead of many
 
 - Make figures that illustrate performance on slowBinomial (Jason)
   - error as a function of time (different curves for different parameter settings)
