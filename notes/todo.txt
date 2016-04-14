@@ -1,16 +1,16 @@
-- Improvements to the system (Andreas)
+x Improvements to the system (Andreas)
   x Turn into webppl package
   x Don't resample/use factors when you predict (to avoid seemingly low variance due to particle collapse)
   x Use single score/factor instead of many
+
+x MH will add RSA model that illustrates inferring lambda
+x MH will plot The Big Sum -- p(d|m) -- as a function of lambda
 
 - Make figures that illustrate performance on slowBinomial (Jason)
   - error as a function of time (different curves for different parameter settings)
   - to explore space of parameters, could do grid search or random sampling
   - given parameters that work well, do we actually see an improvement in speed over slowBinomial?
     What is the tradeoff between speed gain and loss in accuracy?
-
-- MH will add RSA model that illustrates inferring lambda
-- MH will plot The Big Sum -- p(d|m) -- as a function of lambda
 
 
 - Then we'll think about approximating families that could deal with this
