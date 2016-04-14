@@ -1,0 +1,63 @@
+var N = 10;
+
+var slowBinomial = function(p) {
+  return Enumerate(function(){
+    var xs = repeat(N, function(){ return flip(p); });
+    return sum(xs);
+  });
+};
+
+// this is the function we want to speed up by caching
+var slowBinomialMean = function(p) {
+  return mean(slowBinomial(p));
+};
+
+//var fastBinomialMean = interCache(slowBinomialMean);
+
+var inferBinomialP = function(binomialMean) {
+  var p = uniform(0, 1);
+  var m = binomialMean(p);
+  condition(m < 3);  // we know that the mean is < 3
+  return p;
+}
+
+var profile = function(label, binomialMean, results) {
+  //console.log('\n' + label + ':');
+  return timeit(function(){
+    Rejection(function(){
+      return binomialMean(uniform(0, 1), function (arg, result, isCacheHit) {
+        var correctAnswer = N * arg;
+        results.push(isCacheHit ? Math.abs(result - correctAnswer) / correctAnswer : 0);
+        //hits.push(isCacheHit);
+      });
+    }, 100); // .print();
+  });
+};
+
+webpplCsv.writeCSV(map(function(x) {
+  var fastBinomialMean = interCache(slowBinomialMean, {
+    // less important:
+    defaultOffset: 0,
+    defaultSlope: 1,
+    offsetGaussianMean: 0,
+    offsetGaussianVar: 5,
+    slopeGaussianMean: 0,
+    slopeGaussianVar: 5,
+
+    // more important:
+    offsetGuideVar: 0.5,    
+    slopeGuideVar: 0.5,
+    penaltyVariance: 2,
+    returnValuesParticles: 1000,
+    optimizationSteps: 1000,
+    stepSize: .01,
+    threshold: x
+  });
+  var results = [];
+  var time = profile('fastBinomialMean', fastBinomialMean, results);
+  return [x, time.runtimeInMilliseconds].concat(results);
+}, repeat(8, function() { return Math.abs(uniform(0, 2)); })), 'tests/csvTime/threshold.csv');
+//profile('slowBinomialMean', slowBinomialMean);
+
+
+//console.log('test.wppl done.');
