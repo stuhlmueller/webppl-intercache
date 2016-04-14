@@ -34,29 +34,44 @@ var profile = function(label, binomialMean, results) {
   });
 };
 
-webpplCsv.writeCSV(map(function(x) {
-  var fastBinomialMean = interCache(slowBinomialMean, {
-    // less important:
-    defaultOffset: 0,
-    defaultSlope: 1,
-    offsetGaussianMean: 0,
-    offsetGaussianVar: 5,
-    slopeGaussianMean: 0,
-    slopeGaussianVar: 5,
 
-    // more important:
-    offsetGuideVar: 0.5,    
-    slopeGuideVar: 0.5,
-    penaltyVariance: 2,
-    returnValuesParticles: 1000,
-    optimizationSteps: 1000,
-    stepSize: .01,
-    threshold: x
-  });
-  var results = [];
-  var time = profile('fastBinomialMean', fastBinomialMean, results);
-  return [x, time.runtimeInMilliseconds].concat(results);
-}, repeat(8, function() { return Math.abs(uniform(0, 2)); })), 'tests/csvTime/threshold.csv');
+
+var tryParameters = function(propertyName, iterations, valueFunction) {
+  webpplCsv.writeCSV(map(function(x) {
+    var options = {
+      // less important:
+      defaultOffset: 0,
+      defaultSlope: 1,
+      offsetGaussianMean: 0,
+      offsetGaussianVar: 5,
+      slopeGaussianMean: 0,
+      slopeGaussianVar: 5,
+
+      // more important:
+      offsetGuideVar: 0.5,    
+      slopeGuideVar: 0.5,
+      penaltyVariance: 2,
+      returnValuesParticles: 1000,
+      optimizationSteps: 1000,
+      stepSize: .01,
+      threshold: 1
+    };
+    Object.defineProperty(options, propertyName, { value: x });
+    var fastBinomialMean = interCache(slowBinomialMean, options);
+    var results = [];
+    var time = profile('fastBinomialMean', fastBinomialMean, results);
+    return [x, time.runtimeInMilliseconds].concat(results);
+  }, repeat(iterations, valueFunction)), 'tests/csvTime/' + propertyName + '.csv');
+};
+
+tryParameters('offsetGuideVar', 8, function() { return uniform(0, 2); });
+tryParameters('slopeGuideVar', 8, function() { return uniform(0, 2); });
+tryParameters('penaltyVariance', 8, function() { return uniform(0, 8); });
+tryParameters('returnValuesParticles', 8, function() { return Math.ceil(uniform(0, 2000)); });
+tryParameters('optimizationSteps', 8, function() { return Math.ceil(uniform(0, 5000)); });
+tryParameters('stepSize', 8, function() { return uniform(0, 1); });
+tryParameters('threshold', 8, function() { return uniform(0, 2); });
+
 //profile('slowBinomialMean', slowBinomialMean);
 
 
