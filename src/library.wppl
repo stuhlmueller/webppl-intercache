@@ -45,7 +45,7 @@ var interCache = function(slowFunc) {
     };
 
     if (!disableConditioning) {
-      // Soft conditioning on our input-data
+      // Soft conditioning on input-output data
       var scores = map2(
         function(input, output){
           return gaussianERP.score([f(input), 2], output);
@@ -102,7 +102,6 @@ var interCache = function(slowFunc) {
 
     if (returnValVariance > threshold) {
       var trueReturnVal = slowFunc(arg);
-      // need new smc step here (including data)
       state.data.inputs.push(arg);
       state.data.outputs.push(trueReturnVal);
       updateParams(arg, trueReturnVal);
