@@ -6,12 +6,33 @@ x Improvements to the system (Andreas)
 x MH will add RSA model that illustrates inferring lambda
 x MH will plot The Big Sum -- p(d|m) -- as a function of lambda
 
-- Make figures that illustrate performance on slowBinomial (Jason)
-  - error as a function of time (different curves for different parameter settings)
-  - to explore space of parameters, could do grid search or random sampling
-  - given parameters that work well, do we actually see an improvement in speed over slowBinomial?
-    What is the tradeoff between speed gain and loss in accuracy?
 
+x Make figures that illustrate performance on slowBinomial (Jason)
+  x error as a function of time (different curves for different parameter settings)
+  x to explore space of parameters, could do grid search or random sampling
+
+
+- Andreas: figure out why current system doesn't learn
+  - would using SampleGuide instead of SMC fix the problem?
+    do this if disableConditioning is on (rename)
+
+- Jason: Make a figure that illustrates that it works
+         (once Andreas does something)
+  - Send a progress report to Noah that describes what we have done
+    so far (and what we will do next); maybe send to MH and Andreas first
+
+- Andreas, Jason: write down a prior on functions that could
+  fit MH's example data well
+
+- MH: make model slower
+
+--------------------------------------------------------------------
+
+
+- given parameters that work well, do we actually see an improvement in speed over slowBinomial?
+  What is the tradeoff between speed gain and loss in accuracy?
+
+- (optimize variance of guide distribution as well?)
 
 - Then we'll think about approximating families that could deal with this
   - e.g. try simple Bayesian neural nets
@@ -30,5 +51,4 @@ x MH will plot The Big Sum -- p(d|m) -- as a function of lambda
 Later:
 - explore maximum likelihood version (without prior)
 - generalize to multiple arguments; different function approximators
-- optimize variance of guide distribution as well?
 - measuring how well we're doing
