@@ -8,7 +8,8 @@ var variance = function(erp) {
 };
 
 
-var interCache = function(slowFunc) {
+var interCache = function(slowFunc, options) {
+  console.log('threshold: ' + options.threshold);
 
   var state = {
     data: {
@@ -19,8 +20,8 @@ var interCache = function(slowFunc) {
   };
 
   var defaultParams = {
-    offset: 0,
-    slope: 1
+    offset: options.defaultOffset, //0,
+    slope: options.defaultSlope //1
   };  
 
   
@@ -31,11 +32,11 @@ var interCache = function(slowFunc) {
     var slopeGuideMean = param(defaultParams.slope);
 
     // Priors on offset and slope
-    var offset = sample(gaussianERP, [0, 5], {
-      guide: [gaussianERP, [offsetGuideMean, 0.5]]
+    var offset = sample(gaussianERP, [options.offsetGaussianMean, options.offsetGaussianVar], { // 0, 5
+      guide: [gaussianERP, [offsetGuideMean, options.offsetGuideVar]] // 0.5
     });
-    var slope = sample(gaussianERP, [0, 5], {
-      guide: [gaussianERP, [slopeGuideMean, 0.5]]
+    var slope = sample(gaussianERP, [options.slopeGaussianMean, options.slopeGaussianVar], { // 0, 5
+      guide: [gaussianERP, [slopeGuideMean, options.slopeGuideVar]] // 0.5
     });
 
     // Create function parameterized by offset and slope
@@ -48,7 +49,7 @@ var interCache = function(slowFunc) {
       // Soft conditioning on input-output data
       var scores = map2(
         function(input, output){
-          return gaussianERP.score([f(input), 2], output);
+          return gaussianERP.score([f(input), options.penaltyVariance], output); // 2
         },
         state.data.inputs,
         state.data.outputs);
@@ -66,7 +67,7 @@ var interCache = function(slowFunc) {
         var f = distOnFuncs(true);
         return f(arg);
       }, {
-        particles: 1000, // ?
+        particles: options.returnValuesParticles, // 1000
         params: state.guideParams
       });
   }
@@ -74,39 +75,43 @@ var interCache = function(slowFunc) {
   // Update state.guideParams using variational inference (based on all data points observed so far,
   // including new x-y pair)
   var updateParams = function(x, y) {
-    console.log('Updating params based on datapoint', x, y)
+    // console.log('Updating params based on datapoint', x, y)
     var newParams = Optimize(distOnFuncs, {
-      steps: 1000,
-      method: {adagrad: {stepSize: 0.01}},
+      steps: options.optimizationSteps, // 1000
+      method: {adagrad: {stepSize: options.stepSize }}, // 0.01
       estimator: 'ELBO',
       params: state.guideParams
     });
-    console.log(state.guideParams, '->', newParams)
+    // console.log(state.guideParams, '->', newParams)
     _.assign(state, { guideParams: newParams });
   }
 
-  var fastFunc = function(arg) {
-
+  var fastFunc = function(arg, recordResult) {
     var distOnReturnVals = stochasticSurrogate(arg);  // don't condition on data here
     var returnValMean = mean(distOnReturnVals);
     var returnValVariance = variance(distOnReturnVals);
 
-    var threshold = 1.0; // fix
+    var threshold = options.threshold; //.1
 
-    console.log({
-      arg: arg,
-      mean: returnValMean,
-      variance: returnValVariance,
-      greatherThanThreshold: returnValVariance > threshold
-    });
+    // console.log({
+    //   arg: arg,
+    //   mean: returnValMean,
+    //   variance: returnValVariance,
+    //   greatherThanThreshold: returnValVariance > threshold
+    // });
 
     if (returnValVariance > threshold) {
+      // console.log('miss');
       var trueReturnVal = slowFunc(arg);
       state.data.inputs.push(arg);
       state.data.outputs.push(trueReturnVal);
       updateParams(arg, trueReturnVal);
+      recordResult(arg, returnValMean, /*isCacheHit*/ false);
       return trueReturnVal;
     } else {
+      // console.log('hit');
+      // Record error relative to the actual result
+      recordResult(arg, returnValMean, /*isCacheHit*/ true);
       return returnValMean;
     }
   };

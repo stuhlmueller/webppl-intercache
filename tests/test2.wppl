@@ -1,0 +1,78 @@
+var N = 10;
+
+var slowBinomial = function(p) {
+  return Enumerate(function(){
+    var xs = repeat(N, function(){ return flip(p); });
+    return sum(xs);
+  });
+};
+
+// this is the function we want to speed up by caching
+var slowBinomialMean = function(p) {
+  return mean(slowBinomial(p));
+};
+
+//var fastBinomialMean = interCache(slowBinomialMean);
+
+var inferBinomialP = function(binomialMean) {
+  var p = uniform(0, 1);
+  var m = binomialMean(p);
+  condition(m < 3);  // we know that the mean is < 3
+  return p;
+}
+
+var profile = function(label, binomialMean, results) {
+  //console.log('\n' + label + ':');
+  return timeit(function(){
+    Rejection(function(){
+      return binomialMean(uniform(0, 1), function (arg, result, isCacheHit) {
+        var correctAnswer = N * arg;
+        results.push(isCacheHit ? Math.abs(result - correctAnswer) / correctAnswer : 0);
+        //hits.push(isCacheHit);
+      });
+    }, 100); // .print();
+  });
+};
+
+
+
+var tryParameters = function(propertyName, iterations, valueFunction) {
+  webpplCsv.writeCSV(map(function(x) {
+    var options = {
+      // less important:
+      defaultOffset: 0,
+      defaultSlope: 1,
+      offsetGaussianMean: 0,
+      offsetGaussianVar: 5,
+      slopeGaussianMean: 0,
+      slopeGaussianVar: 5,
+
+      // more important:
+      offsetGuideVar: 0.5,    
+      slopeGuideVar: 0.5,
+      penaltyVariance: 2,
+      returnValuesParticles: 1000,
+      optimizationSteps: 1000,
+      stepSize: .01,
+      threshold: 1
+    };
+    Object.defineProperty(options, propertyName, { value: x });
+    var fastBinomialMean = interCache(slowBinomialMean, options);
+    var results = [];
+    var time = profile('fastBinomialMean', fastBinomialMean, results);
+    return [x, time.runtimeInMilliseconds].concat(results);
+  }, repeat(iterations, valueFunction)), 'tests/csvTime/' + propertyName + '.csv');
+};
+
+tryParameters('offsetGuideVar', 8, function() { return uniform(0, 2); });
+tryParameters('slopeGuideVar', 8, function() { return uniform(0, 2); });
+tryParameters('penaltyVariance', 8, function() { return uniform(0, 8); });
+tryParameters('returnValuesParticles', 8, function() { return Math.ceil(uniform(0, 2000)); });
+tryParameters('optimizationSteps', 8, function() { return Math.ceil(uniform(0, 5000)); });
+tryParameters('stepSize', 8, function() { return uniform(0, 1); });
+tryParameters('threshold', 8, function() { return uniform(0, 2); });
+
+//profile('slowBinomialMean', slowBinomialMean);
+
+
+//console.log('test.wppl done.');
