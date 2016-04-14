@@ -9,6 +9,7 @@ var variance = function(erp) {
 
 
 var interCache = function(slowFunc, options) {
+  console.log('threshold: ' + options.threshold);
 
   var state = {
     data: {
@@ -66,7 +67,7 @@ var interCache = function(slowFunc, options) {
         var f = distOnFuncs(true);
         return f(arg);
       }, {
-        pparticles: options.returnValuesParticles, // 1000
+        particles: options.returnValuesParticles, // 1000
         params: state.guideParams
       });
   }
@@ -86,7 +87,6 @@ var interCache = function(slowFunc, options) {
   }
 
   var fastFunc = function(arg, recordResult) {
-
     var distOnReturnVals = stochasticSurrogate(arg);  // don't condition on data here
     var returnValMean = mean(distOnReturnVals);
     var returnValVariance = variance(distOnReturnVals);
@@ -101,6 +101,7 @@ var interCache = function(slowFunc, options) {
     // });
 
     if (returnValVariance > threshold) {
+      // console.log('miss');
       var trueReturnVal = slowFunc(arg);
       state.data.inputs.push(arg);
       state.data.outputs.push(trueReturnVal);
@@ -108,6 +109,7 @@ var interCache = function(slowFunc, options) {
       recordResult(arg, returnValMean, /*isCacheHit*/ false);
       return trueReturnVal;
     } else {
+      // console.log('hit');
       // Record error relative to the actual result
       recordResult(arg, returnValMean, /*isCacheHit*/ true);
       return returnValMean;
