@@ -1,0 +1,89 @@
+// to run: webppl generics-gridSearch.wppl --require gen-utils
+
+var previter = 50000
+var prevprioriter = 50000
+
+console.log('inferring prevalence of property-category pairs...')
+var prevalenceERP = IncrementalMH(prevalenceModel, 
+										previter, 
+										{
+											"verbose":"true",
+											"verboseLag":previter/10,
+											"burn": previter/2
+										}
+									)
+console.log('prevalence of property-category pairs inferred!')
+
+// reorganize prevalenceERP into a structured object
+var prevalenceERPobject = _.object(map(function(p){
+	var categories = _.uniq(_.pluck(subset(df_truth, "Property", p), "Category"))
+	return [p, _.object(map(function(k){
+		[k, marginalizeERP(prevalenceERP, [k,p])]
+	}, categories))]
+}, properties))
+
+
+console.log('inferring prevalence priors...')
+var priorERP = IncrementalMH(priorModel, 
+	prevprioriter, 
+	{
+		"verbose":"true", 
+		"verboseLag":previter/10,
+		"burn": prevprioriter/2
+	}
+	)
+console.log('prevalence priors inferred!')
+
+// reorganize priorERP into a structured object
+var priorERPobject = _.object(map(function(p){
+	return [p, marginalizeERP(priorERP, p)]
+}, properties))
+
+// model produces "generic is true" vs. "mu"; data is as "agree-key" vs. "disagree-key"
+var responseDictionary = {
+	"agree-key":"generic is true",
+	"disagree-key":"mu"
+}
+
+
+var results = map(function(speakerOptimality){
+	console.log(speakerOptimality)
+	var phi = 0.001 //note, there must be at least a tiny amount of noise, 
+	// otherwise for the items with 0 prevalence, the model crashes
+
+	return [speakerOptimality, sum(map(function(property){
+
+		var propertyData = subset(df_truth, "Property", property) // subset data
+		var categories = _.uniq(_.pluck(propertyData, "Category")) // each property has its own unique categories for which we have data
+
+		var priorProperty_ERP = priorERPobject[property]
+		var prior = priorProperty_ERP.MAP().val
+
+		return sum(map(function(k){
+
+				var responseData = _.pluck(subset(propertyData, "Category", k), "response")
+				
+				var prevalencePropCat = prevalenceERPobject[property][k]
+				var prevalence = prevalencePropCat.MAP().val
+
+				// EXPENSIVE FUNCTION
+		     	var predictionERP = speaker2(prevalence, prior, speakerOptimality, 1)
+
+		     	var linkedERP = guessingLink(predictionERP, phi)
+				
+				var scr = sum(map(function(d) {
+							    return linkedERP.score([], responseDictionary[d])
+									}, responseData))
+
+				return scr
+		}, categories))
+
+	}, properties))]
+
+},_.range(0.1,30,0.1))
+
+var outfile = 'results/generics-score-gridSearch-previter'+previter+
+				'_prevprioriter'+prevprioriter+'.csv'
+genUtils.writeCSV(results, outfile)
+
+console.log('output written to... ' + outfile )
