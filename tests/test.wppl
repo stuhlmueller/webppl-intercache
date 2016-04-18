@@ -1,19 +1,29 @@
 var options = {
-  // less important:
-  defaultOffset: 0,
-  defaultSlope: 1,
-  offsetGaussianMean: 0,
-  offsetGaussianVar: 5,
-  slopeGaussianMean: 0,
-  slopeGaussianVar: 5,
 
-  // more important:
-  offsetGuideVar: 0.5,    
-  slopeGuideVar: 0.5,
-  penaltyVariance: 1,
-  returnValuesParticles: 1000,
-  optimizationSteps: 1000,
-  stepSize: .01,
+  prior: {
+    offsetMean: 0,
+    offsetVar: 5,
+    slopeMean: 1,
+    slopeVar: 5
+  },
+
+  guide: {
+    initialOffsetMean: 0,
+    initialOffsetVar: 3,
+    initialSlopeMean: 1,
+    initialSlopeVar: 3
+  },
+
+  optimization: {
+    stepSize: .01,
+    steps: 1000
+  },
+
+  prediction: {
+    samples: 1000
+  },
+  
+  regressionVariance: 1,
   threshold: .2
 }
 

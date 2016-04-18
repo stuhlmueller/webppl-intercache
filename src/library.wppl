@@ -11,7 +11,6 @@ var variance = function(erp) {
 
 
 var interCache = function(slowFunc, options) {
-  console.log('threshold: ' + options.threshold);
 
   var state = {
     data: {
@@ -25,24 +24,20 @@ var interCache = function(slowFunc, options) {
     }
   };
 
-  var defaultParams = {
-    offset: options.defaultOffset, //0,
-    slope: options.defaultSlope //1
-  };  
-
-  
   var distOnFuncs = function() {
 
     // Define slope/offset and parameterize based on guide params
-    var offsetGuideMean = param(defaultParams.offset);
-    var slopeGuideMean = param(defaultParams.slope);
+    var guideOffsetMean = param(options.guide.initialOffsetMean);
+    var guideOffsetVar = param(options.guide.initialOffsetVar);
+    var guideSlopeMean = param(options.guide.initialSlopeMean);
+    var guideSlopeVar = param(options.guide.initialSlopeVar);
 
     // Priors on offset and slope
-    var offset = sample(gaussianERP, [options.offsetGaussianMean, options.offsetGaussianVar], { // 0, 5
-      guide: [gaussianERP, [offsetGuideMean, options.offsetGuideVar]] // 0.5
+    var offset = sample(gaussianERP, [options.prior.offsetMean, options.prior.offsetVar], {
+      guide: [gaussianERP, [guideOffsetMean, guideOffsetVar]]
     });
-    var slope = sample(gaussianERP, [options.slopeGaussianMean, options.slopeGaussianVar], { // 0, 5
-      guide: [gaussianERP, [slopeGuideMean, options.slopeGuideVar]] // 0.5
+    var slope = sample(gaussianERP, [options.prior.slopeMean, options.prior.slopeVar], {
+      guide: [gaussianERP, [guideSlopeMean, guideSlopeVar]]
     });
 
     // Create function parameterized by offset and slope
@@ -59,7 +54,7 @@ var interCache = function(slowFunc, options) {
       // Soft conditioning on input-output data
       var scores = map2(
         function(input, output){
-          return gaussianERP.score([f(input), options.penaltyVariance], output); // 2
+          return gaussianERP.score([f(input), options.regressionVariance], output); // 2
         },
         state.data.inputs,
         state.data.outputs);
@@ -75,7 +70,7 @@ var interCache = function(slowFunc, options) {
   var stochasticSurrogate = function(arg) {
     _.assign(state.run, { samplePrediction: true, argument: arg });
     var marginal = SampleGuide(distOnFuncs, {
-      samples: options.returnValuesParticles, // 1000
+      samples: options.prediction.samples,
       params: state.guideParams
     });
     return marginal;
@@ -87,8 +82,8 @@ var interCache = function(slowFunc, options) {
     // console.log('Updating params based on datapoint', x, y)
     _.assign(state.run, { samplePrediction: false, argument: null });
     var newParams = Optimize(distOnFuncs, {
-      steps: options.optimizationSteps, // 1000
-      method: {adagrad: {stepSize: options.stepSize }}, // 0.01
+      steps: options.optimization.steps,
+      method: {adagrad: {stepSize: options.optimization.stepSize }},
       estimator: 'ELBO',
       params: state.guideParams
     });
