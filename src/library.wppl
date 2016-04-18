@@ -48,7 +48,7 @@ var interCache = function(slowFunc, options) {
 
     if (state.run.samplePrediction) {
       // Return output of function applied to argument
-      return f(state.run.argument);
+      return f(state.run.argument);  // TODO: learn regressionVariance, add it here
       
     } else {
       // Soft conditioning on input-output data

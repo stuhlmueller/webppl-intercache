@@ -11,20 +11,33 @@ x Make figures that illustrate performance on slowBinomial (Jason)
   x error as a function of time (different curves for different parameter settings)
   x to explore space of parameters, could do grid search or random sampling
 
-
-- Andreas: figure out why current system doesn't learn
-  - would using SampleGuide instead of SMC fix the problem?
+x Andreas: figure out why current system doesn't learn
+  x would using SampleGuide instead of SMC fix the problem?
     do this if disableConditioning is on (rename)
 
-- Jason: Make a figure that illustrates that it works
-         (once Andreas does something)
-  - Send a progress report to Noah that describes what we have done
-    so far (and what we will do next); maybe send to MH and Andreas first
+x Send a progress report to Noah that describes what we have done
+  so far (and what we will do next); maybe send to MH and Andreas first
 
-- Andreas, Jason: write down a prior on functions that could
-  fit MH's example data well
+- make better visualizations for current simple model
+  - think about what figure we want
+  - send proposal for figure (w/o actually making it) to mh and andreas
+  - then gather data (if needed) and make figure
+
+- abstract out prior on functions
+
+- test with polynomial distOnFuncs on binomial model
+- test with polynomial distOnFuncs on mh's data
+
+- test with neural net distOnFuncs on binomial model (andreas)
+- test with neural net distOnFuncs on mh's data
 
 - MH: make model slower
+
+- meet again friday at 1pm
+
+- (try on spatial language model)
+
+- (look at gpcache notes)
 
 --------------------------------------------------------------------
 
