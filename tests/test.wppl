@@ -1,3 +1,23 @@
+var options = {
+  // less important:
+  defaultOffset: 0,
+  defaultSlope: 1,
+  offsetGaussianMean: 0,
+  offsetGaussianVar: 5,
+  slopeGaussianMean: 0,
+  slopeGaussianVar: 5,
+
+  // more important:
+  offsetGuideVar: 0.5,    
+  slopeGuideVar: 0.5,
+  penaltyVariance: 1,
+  returnValuesParticles: 1000,
+  optimizationSteps: 1000,
+  stepSize: .01,
+  threshold: .2
+}
+
+
 var N = 11;
 
 var slowBinomial = function(p) {
@@ -12,19 +32,19 @@ var slowBinomialMean = function(p) {
   return mean(slowBinomial(p));
 };
 
-var fastBinomialMean = interCache(slowBinomialMean);
+var fastBinomialMean = interCache(slowBinomialMean, options);
 
 var inferBinomialP = function(binomialMean) {
   var p = uniform(0, 1);
-  var m = binomialMean(p);
-  condition(m < 3);  // we know that the mean is < 3
+  var m = binomialMean(p, function(){});
+  // condition(m < 3);  // we know that the mean is < 3
   return p;
 }
 
 var profile = function(label, binomialMean) {
   console.log('\n' + label + ':');
   console.log(timeit(function(){
-    Rejection(function(){return inferBinomialP(binomialMean);}, 20); // .print();
+    Rejection(function(){return inferBinomialP(binomialMean);}, 200); // .print();
   }).runtimeInMilliseconds.toString() + 'ms');
 }
 
