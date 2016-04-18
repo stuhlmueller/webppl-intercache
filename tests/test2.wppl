@@ -1,3 +1,16 @@
+// Run using:
+// webppl tests/test2.wppl --require webppl-timeit --require webppl-json --require .
+
+
+var range = function(n) {
+  if (n == 0) {
+    return [];
+  } else {
+    return range(n-1).concat([n]);
+  }
+}
+
+
 var N = 10;
 
 var slowBinomial = function(p) {
@@ -27,7 +40,8 @@ var profile = function(label, binomialMean, results) {
     Rejection(function(){
       return binomialMean(uniform(0, 1), function (arg, result, isCacheHit) {
         var correctAnswer = N * arg;
-        results.push(isCacheHit ? Math.abs(result - correctAnswer) / correctAnswer : 0);
+        // results.push(isCacheHit ? Math.abs(result - correctAnswer) / correctAnswer : 0);
+        results.push(Math.abs(result - correctAnswer));
         //hits.push(isCacheHit);
       });
     }, 100); // .print();
@@ -36,43 +50,54 @@ var profile = function(label, binomialMean, results) {
 
 
 
-var tryParameters = function(propertyName, iterations, valueFunction) {
-  webpplCsv.writeCSV(map(function(x) {
-    var options = {
-      // less important:
-      defaultOffset: 0,
-      defaultSlope: 1,
-      offsetGaussianMean: 0,
-      offsetGaussianVar: 5,
-      slopeGaussianMean: 0,
-      slopeGaussianVar: 5,
+var randomlyTryParameters = function(label, iterations) {
 
-      // more important:
-      offsetGuideVar: 0.5,    
-      slopeGuideVar: 0.5,
-      penaltyVariance: 2,
-      returnValuesParticles: 1000,
-      optimizationSteps: 1000,
-      stepSize: .01,
-      threshold: 1
-    };
-    Object.defineProperty(options, propertyName, { value: x });
+  var filename = 'tests/randomParams/' + label + '.json';
+
+  var collectDatum = function(run){
+    console.log('Collecting data...');    
+    var options = {
+      prior: {
+        offsetMean: 0,
+        offsetVar: 5,
+        slopeMean: 1,
+        slopeVar: 5
+      },
+      guide: {
+        initialOffsetMean: 0,
+        initialOffsetVar: 3,
+        initialSlopeMean: 1,
+        initialSlopeVar: 3
+      },
+      optimization: {
+        stepSize: 0.01,  // uniform(0, .5)
+        steps: 500 // Math.ceil(uniform(0, 2000))
+      },
+      prediction: {
+        samples: 500 // Math.ceil(uniform(0, 1000))
+      },
+      regressionVariance: 1, // uniform(0, 2)
+      threshold: 0.1 // uniform(0, 1)
+    };    
     var fastBinomialMean = interCache(slowBinomialMean, options);
-    var results = [];
-    var time = profile('fastBinomialMean', fastBinomialMean, results);
-    return [x, time.runtimeInMilliseconds].concat(results);
-  }, repeat(iterations, valueFunction)), 'tests/csvTime/' + propertyName + '.csv');
+    var errors = [];
+    var time = profile('fastBinomialMean', fastBinomialMean, errors);
+    var datum = {
+      stepSize: options.optimization.stepSize,
+      optimizationSteps: options.optimization.steps,
+      predictionSamples: options.prediction.samples,
+      regressionVariance: options.regressionVariance,
+      threshold: options.threshold,
+      runtimeInMilliseconds: time.runtimeInMilliseconds,
+      errors: errors,
+      run: run
+    };        
+    return datum;
+  }
+  var data = map(collectDatum, range(iterations));
+  
+  json.write(filename, {data: data});
 };
 
-tryParameters('offsetGuideVar', 8, function() { return uniform(0, 2); });
-tryParameters('slopeGuideVar', 8, function() { return uniform(0, 2); });
-tryParameters('penaltyVariance', 8, function() { return uniform(0, 8); });
-tryParameters('returnValuesParticles', 8, function() { return Math.ceil(uniform(0, 2000)); });
-tryParameters('optimizationSteps', 8, function() { return Math.ceil(uniform(0, 5000)); });
-tryParameters('stepSize', 8, function() { return uniform(0, 1); });
-tryParameters('threshold', 8, function() { return uniform(0, 2); });
 
-//profile('slowBinomialMean', slowBinomialMean);
-
-
-//console.log('test.wppl done.');
+randomlyTryParameters('run-10', 10);

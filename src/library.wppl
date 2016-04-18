@@ -1,4 +1,4 @@
-var SHOW_DEBUG_INFO = true;
+var SHOW_DEBUG_INFO = false;
 
 var mean = function(erp) {
   return expectation(erp, function(x) {return x;});
