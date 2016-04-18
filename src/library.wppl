@@ -1,3 +1,5 @@
+var SHOW_DEBUG_INFO = true;
+
 var mean = function(erp) {
   return expectation(erp, function(x) {return x;});
 };
@@ -16,7 +18,11 @@ var interCache = function(slowFunc, options) {
       inputs: [],
       outputs: []
     },
-    guideParams: {}
+    guideParams: {},
+    run: {
+      samplePrediction: false,
+      argument: null
+    }
   };
 
   var defaultParams = {
@@ -25,7 +31,7 @@ var interCache = function(slowFunc, options) {
   };  
 
   
-  var distOnFuncs = function(disableConditioning) {
+  var distOnFuncs = function() {
 
     // Define slope/offset and parameterize based on guide params
     var offsetGuideMean = param(defaultParams.offset);
@@ -45,7 +51,11 @@ var interCache = function(slowFunc, options) {
       return y;
     };
 
-    if (!disableConditioning) {
+    if (state.run.samplePrediction) {
+      // Return output of function applied to argument
+      return f(state.run.argument);
+      
+    } else {
       // Soft conditioning on input-output data
       var scores = map2(
         function(input, output){
@@ -54,28 +64,28 @@ var interCache = function(slowFunc, options) {
         state.data.inputs,
         state.data.outputs);
       factor(sum(scores));
+
+      // Return function
+      return f;
     }
-    
-    return f;
   };
 
   
   // Given argument, return distribution on return values
   var stochasticSurrogate = function(arg) {
-    return SMC(
-      function(){
-        var f = distOnFuncs(true);
-        return f(arg);
-      }, {
-        particles: options.returnValuesParticles, // 1000
-        params: state.guideParams
-      });
-  }
+    _.assign(state.run, { samplePrediction: true, argument: arg });
+    var marginal = SampleGuide(distOnFuncs, {
+      samples: options.returnValuesParticles, // 1000
+      params: state.guideParams
+    });
+    return marginal;
+  };
 
   // Update state.guideParams using variational inference (based on all data points observed so far,
   // including new x-y pair)
   var updateParams = function(x, y) {
     // console.log('Updating params based on datapoint', x, y)
+    _.assign(state.run, { samplePrediction: false, argument: null });
     var newParams = Optimize(distOnFuncs, {
       steps: options.optimizationSteps, // 1000
       method: {adagrad: {stepSize: options.stepSize }}, // 0.01
@@ -91,16 +101,17 @@ var interCache = function(slowFunc, options) {
     var returnValMean = mean(distOnReturnVals);
     var returnValVariance = variance(distOnReturnVals);
 
-    var threshold = options.threshold; //.1
+    if (SHOW_DEBUG_INFO) {
+      var _trueReturnVal = slowFunc(arg);
+      console.log('\nError:', Math.abs(returnValMean - _trueReturnVal));
+      console.log('                Argument:', arg);
+      console.log('  Estimated return value:', returnValMean);
+      console.log('     Estimation variance:', returnValVariance);
+      console.log('       True return value:', _trueReturnVal);
+      console.log('                  Params:', state.guideParams);
+    }
 
-    // console.log({
-    //   arg: arg,
-    //   mean: returnValMean,
-    //   variance: returnValVariance,
-    //   greatherThanThreshold: returnValVariance > threshold
-    // });
-
-    if (returnValVariance > threshold) {
+    if (returnValVariance > options.threshold) {
       // console.log('miss');
       var trueReturnVal = slowFunc(arg);
       state.data.inputs.push(arg);
