@@ -54,7 +54,7 @@ var randomlyTryParameters = function(label, iterations) {
 
   var filename = 'tests/randomParams/' + label + '.json';
 
-  var collectDatum = function(run){
+  var collectDatum = function(iterationIndex){
     console.log('Collecting data...');    
     var options = {
       prior: {
@@ -90,7 +90,7 @@ var randomlyTryParameters = function(label, iterations) {
       threshold: options.threshold,
       runtimeInMilliseconds: time.runtimeInMilliseconds,
       errors: errors,
-      run: run
+      iterationIndex: iterationIndex
     };        
     return datum;
   }
