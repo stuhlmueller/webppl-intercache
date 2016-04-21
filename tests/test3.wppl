@@ -1,0 +1,117 @@
+// Run using:
+// webppl tests/test2.wppl --require webppl-timeit --require webppl-json --require .
+
+var N = 15;
+
+var range = function(n) {
+  if (n == 0) {
+    return [];
+  } else {
+    return range(n-1).concat([n]);
+  }
+}
+
+var slowBinomial = function(p) {
+  return Enumerate(function(){
+    var xs = repeat(N, function(){ return flip(p); });
+    return sum(xs);
+  });
+};
+
+// this is the function we want to speed up by caching
+var slowBinomialMean = function(p) {
+  return mean(slowBinomial(p));
+};
+
+var options = {
+  prior: {
+    offsetMean: 0,
+    offsetVar: 5,
+    slopeMean: 1,
+    slopeVar: 5
+  },
+  guide: {
+    initialOffsetMean: 0,
+    initialOffsetVar: 3,
+    initialSlopeMean: 1,
+    initialSlopeVar: 3
+  },
+  optimization: {
+    stepSize: 0.01,
+    steps: 500
+  },
+  prediction: {
+    samples: 500
+  },
+  regressionVariance: 1,
+  threshold: 0.1
+};
+
+var runTest = function(label, fastFunc, slowFunc, numberOfCalls) {
+  console.log('\n' + label + ':');
+
+  var indices = range(numberOfCalls);
+  return map(function(index) {
+	console.log('Starting iteration ' + index);
+	var p = uniform(0, 1);
+	var slowTimeAndValue = timeit(function() { return slowFunc(p); });
+  	var fastTimeAndValue = timeit(function() {
+  		return fastFunc(p, function (arg, result, isCacheHit) {
+  			return {
+  				arg: arg,
+  				result: result,
+  				isCacheHit: isCacheHit
+  			};
+  		});
+  	});
+
+  	return {
+  		slow: slowTimeAndValue,
+  		fast: fastTimeAndValue
+  	}
+  }, indices);
+};
+
+var mapWindowMean = function(list, windowSize, fn) {
+	var indices = range(list.length - windowSize);
+	return map(function(i) {
+		// For each index i, get the window and compute the mean on the window
+		var window = map(fn, list.slice(i, i + windowSize));
+		return sum(window) / windowSize;
+	}, indices)
+}
+
+var runTestAndWriteResult = function(label) {
+	var fileName = 'tests/progressOverTime/' + label + '.json';
+	var fastFunc = interCache(slowBinomialMean, options);
+	var result = runTest(label, fastFunc, slowBinomialMean, 50);
+
+	// Accuracy over time for hits only
+	var hits = filter(function(r) { return r.fast.value.isCacheHit; }, result);
+	var errorOverTime = map(function(r) { return Math.abs(r.slow.value - r.fast.value.result); }, hits);
+
+	// fraction of hits in a sliding window
+	var windowSize = 3;
+	var hitRate = mapWindowMean(result, windowSize, function(r) { return r.fast.value.isCacheHit ? 1 : 0 });
+
+	// Average time in a sliding window
+	var avgTime = mapWindowMean(result, windowSize, function(r) { return r.fast.runtimeInMilliseconds });
+
+	// Average for slow function over total span
+	var avgSlowTime = sum(map(function(r) { return r.slow.runtimeInMilliseconds }, result)) / result.length;
+
+	// Average time spent for cache hits
+	var avgCacheLookupTime = sum(map(function(r) { return r.fast.runtimeInMilliseconds }, hits)) / hits.length;
+
+	json.write(fileName, {
+		errorOverTime: errorOverTime,
+		hitRate: hitRate,
+		avgTime: avgTime,
+		avgSlowTime: avgSlowTime,
+		avgCacheLookupTime: avgCacheLookupTime
+	});
+};
+
+runTestAndWriteResult('all-data')
+
+
