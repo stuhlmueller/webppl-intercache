@@ -1,0 +1,68 @@
+---
+title: "progressOverTime-figures"
+author: "mht"
+date: "April 21, 2016"
+output: html_document
+---
+
+```{r echo=FALSE}
+library(jsonlite)
+
+d<- fromJSON(readLines("~/Documents/research/webppl-intercache/tests/progressOverTime/all-data.json"))
+
+df<-bind_rows(
+  data.frame(
+    param = "errorOverTime",
+    iter = seq(1, length(d$errorOverTime)),
+    val = d$errorOverTime
+  ),
+  data.frame(
+    param = "hitRate",
+    iter = seq(1, length(d$hitRate)),
+    val = d$hitRate
+  ),
+  data.frame(
+    param = "avgTime",
+    iter = seq(1, length(d$avgTime)),
+    val = d$avgTime
+  ),
+  data.frame(
+    param = "avgSlowTime",
+    iter = seq(1, length(d$avgSlowTime)),
+    val = d$avgSlowTime
+  ),
+  data.frame(
+    param = "avgCacheLookupTime",
+    iter = seq(1, length(d$avgCacheLookupTime)),
+    val = d$avgCacheLookupTime
+  )
+) %>%
+  mutate(param = factor(param)) #same as mutate(df, param=factor(param))
+```
+
+
+
+
+```{r echo=FALSE}
+ggplot(df %>% filter(param%in%c('errorOverTime', 'hitRate')), 
+       aes(x=iter,
+           y=val))+
+  geom_point()+
+  geom_smooth()+
+  xlab('"Iteration"')+
+  facet_wrap(~param)
+
+```
+
+```{r echo=FALSE}
+ggplot(df %>% filter(param%in%c('avgTime')), 
+       aes(x=iter,
+           y=val))+
+  geom_point()+
+  geom_smooth()+
+  xlab('"Iteration"')+
+  ylab('Running Time per iteration')+
+  geom_hline(data = df %>% 
+               filter(param%in%c("avgCacheLookupTime", "avgSlowTime")),
+             aes(yintercept = val, linetype = param))
+```
