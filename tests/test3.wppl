@@ -84,14 +84,14 @@ var mapWindowMean = function(list, windowSize, fn) {
 var runTestAndWriteResult = function(label) {
 	var fileName = 'tests/progressOverTime/' + label + '.json';
 	var fastFunc = interCache(slowBinomialMean, options);
-	var result = runTest(label, fastFunc, slowBinomialMean, 50);
+	var result = runTest(label, fastFunc, slowBinomialMean, 500);
 
 	// Accuracy over time for hits only
 	var hits = filter(function(r) { return r.fast.value.isCacheHit; }, result);
 	var errorOverTime = map(function(r) { return Math.abs(r.slow.value - r.fast.value.result); }, hits);
 
 	// fraction of hits in a sliding window
-	var windowSize = 3;
+	var windowSize = 30;
 	var hitRate = mapWindowMean(result, windowSize, function(r) { return r.fast.value.isCacheHit ? 1 : 0 });
 
 	// Average time in a sliding window
