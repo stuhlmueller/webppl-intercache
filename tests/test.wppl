@@ -46,7 +46,7 @@ var fastBinomialMean = interCache(slowBinomialMean, options);
 
 var inferBinomialP = function(binomialMean) {
   var p = uniform(0, 1);
-  var m = binomialMean(p, function(){});
+  var m = binomialMean(p, function(arg, result){ return result; });
   // condition(m < 3);  // we know that the mean is < 3
   return p;
 }

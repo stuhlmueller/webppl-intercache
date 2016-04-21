@@ -34,15 +34,14 @@ var inferBinomialP = function(binomialMean) {
   return p;
 }
 
-var profile = function(label, binomialMean, results) {
+var profile = function(label, binomialMean) {
   //console.log('\n' + label + ':');
   return timeit(function(){
     Rejection(function(){
       return binomialMean(uniform(0, 1), function (arg, result, isCacheHit) {
         var correctAnswer = N * arg;
-        // results.push(isCacheHit ? Math.abs(result - correctAnswer) / correctAnswer : 0);
-        results.push(Math.abs(result - correctAnswer));
-        //hits.push(isCacheHit);
+        var error = Math.abs(result - correctAnswer);
+        return error;
       });
     }, 100); // .print();
   });
@@ -80,8 +79,7 @@ var randomlyTryParameters = function(label, iterations) {
       threshold: 0.1 // uniform(0, 1)
     };    
     var fastBinomialMean = interCache(slowBinomialMean, options);
-    var errors = [];
-    var time = profile('fastBinomialMean', fastBinomialMean, errors);
+    var time = profile('fastBinomialMean', fastBinomialMean);
     var datum = {
       stepSize: options.optimization.stepSize,
       optimizationSteps: options.optimization.steps,
@@ -89,7 +87,7 @@ var randomlyTryParameters = function(label, iterations) {
       regressionVariance: options.regressionVariance,
       threshold: options.threshold,
       runtimeInMilliseconds: time.runtimeInMilliseconds,
-      errors: errors,
+      errors: time.value,
       iterationIndex: iterationIndex
     };        
     return datum;
