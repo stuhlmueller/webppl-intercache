@@ -6,9 +6,12 @@ output: html_document
 ---
 
 ```{r echo=FALSE}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
 library(jsonlite)
 
-d<- fromJSON(readLines("~/Documents/research/webppl-intercache/tests/progressOverTime/all-data.json"))
+d<- fromJSON(readLines("~/Documents/StanfordCourses/GoodmanResearch/intercache/tests/progressOverTime/all-data.json"))
 
 df<-bind_rows(
   data.frame(
@@ -42,7 +45,6 @@ df<-bind_rows(
 
 
 
-
 ```{r echo=FALSE}
 ggplot(df %>% filter(param%in%c('errorOverTime', 'hitRate')), 
        aes(x=iter,
@@ -53,6 +55,9 @@ ggplot(df %>% filter(param%in%c('errorOverTime', 'hitRate')),
   facet_wrap(~param)
 
 ```
+
+Left: The absolute error over time for cache hits only.
+Right: The average hit rate over a window of 30 calls, starting with a particular call.
 
 ```{r echo=FALSE}
 ggplot(df %>% filter(param%in%c('avgTime')), 
@@ -66,3 +71,5 @@ ggplot(df %>% filter(param%in%c('avgTime')),
                filter(param%in%c("avgCacheLookupTime", "avgSlowTime")),
              aes(yintercept = val, linetype = param))
 ```
+
+Average query time over a window of 30 calls, compared to global average of non-cached query (avgSlowTime) and average time of cache hits (avgCacheLookupTime).
