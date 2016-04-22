@@ -42,7 +42,7 @@ var slowBinomialMean = function(p) {
   return mean(slowBinomial(p));
 };
 
-var fastBinomialMean = interCache(slowBinomialMean, options);
+var fastBinomialMean = interCache(slowBinomialMean, options, makeLinearFunction);
 
 var inferBinomialP = function(binomialMean) {
   var p = uniform(0, 1);

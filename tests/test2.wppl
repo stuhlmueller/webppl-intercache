@@ -78,7 +78,7 @@ var randomlyTryParameters = function(label, iterations) {
       regressionVariance: 1, // uniform(0, 2)
       threshold: 0.1 // uniform(0, 1)
     };    
-    var fastBinomialMean = interCache(slowBinomialMean, options);
+    var fastBinomialMean = interCache(slowBinomialMean, options, makeLinearFunction);
     var time = profile('fastBinomialMean', fastBinomialMean);
     var datum = {
       stepSize: options.optimization.stepSize,
