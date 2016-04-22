@@ -11,7 +11,7 @@ library(tidyr)
 library(ggplot2)
 library(jsonlite)
 
-d<- fromJSON(readLines("~/Documents/StanfordCourses/GoodmanResearch/intercache/tests/progressOverTime/all-data.json"))
+d<- fromJSON(readLines("all-data.json"))
 
 df<-bind_rows(
   data.frame(
