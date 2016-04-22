@@ -18,22 +18,36 @@ x Andreas: figure out why current system doesn't learn
 x Send a progress report to Noah that describes what we have done
   so far (and what we will do next); maybe send to MH and Andreas first
 
-- make better visualizations for current simple model
-  - think about what figure we want
-  - send proposal for figure (w/o actually making it) to mh and andreas
-  - then gather data (if needed) and make figure
+x make better visualizations for current simple model
+  x think about what figure we want
+  x send proposal for figure (w/o actually making it) to mh and andreas
+  x then gather data (if needed) and make figure
 
-- abstract out prior on functions
+x abstract out prior on functions
 
-- test with polynomial distOnFuncs on binomial model
+
+- Next meeting: Fri 1pm
+
+- Andreas: factor out mutation to library.js file
+
+- for running time per iteration plot, also make version of plots with window size 10
+  (to better understand initial overhead)
+
+- test with polynomial distOnFuncs on (linear) binomial model
+  - let polynomial degree be an option
+  - also visualize raw data (input-output pairs observed) + best function learned
+    - (augment data collection)
+    
+- test with binomial variance (or some other non-linear function)
 - test with polynomial distOnFuncs on mh's data
+
+- MH: look into (uninformative) priors on regression variance
+
+- MH: make model slower
 
 - test with neural net distOnFuncs on binomial model (andreas)
 - test with neural net distOnFuncs on mh's data
 
-- MH: make model slower
-
-- meet again friday at 1pm
 
 - (try on spatial language model)
 
@@ -64,4 +78,4 @@ x Send a progress report to Noah that describes what we have done
 Later:
 - explore maximum likelihood version (without prior)
 - generalize to multiple arguments; different function approximators
-- measuring how well we're doing
+- share variance between polynomial coefficients
