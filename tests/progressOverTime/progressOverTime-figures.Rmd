@@ -1,11 +1,11 @@
 ---
-title: "progressOverTime-figures"
-author: "mht"
+title: "Intercache applied to Binomial"
+author: "mht, jf, ast"
 date: "April 21, 2016"
 output: html_document
 ---
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=F, warning=F}
 library(dplyr)
 library(tidyr)
 library(ggplot2)
@@ -45,7 +45,7 @@ df<-bind_rows(
 
 
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=F, warning=F}
 ggplot(df %>% filter(param%in%c('errorOverTime', 'hitRate')), 
        aes(x=iter,
            y=val))+
@@ -59,7 +59,7 @@ ggplot(df %>% filter(param%in%c('errorOverTime', 'hitRate')),
 Left: The absolute error over time for cache hits only.
 Right: The average hit rate over a window of 30 calls, starting with a particular call.
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=F, warning=F}
 ggplot(df %>% filter(param%in%c('avgTime')), 
        aes(x=iter,
            y=val))+
