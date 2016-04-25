@@ -24,7 +24,7 @@ var options = {
   },
   
   regressionVariance: 1,
-  threshold: .2
+  threshold: .1
 }
 
 

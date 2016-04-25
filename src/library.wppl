@@ -1,4 +1,7 @@
-var SHOW_DEBUG_INFO = false;
+var SHOW_DEBUG_INFO = true;
+
+var cacheStates = webpplIntercache.cacheStates;
+
 
 var mean = function(erp) {
   return expectation(erp, function(x) {return x;});
@@ -31,11 +34,12 @@ var makeLinearFunction = function(options) {
     };
 };
 
+
 // Note: priorFunc calls the param function, which means that it must *only* be called
 // in distOnFuncs
 var interCache = function(slowFunc, options, priorFunc) {
 
-  var state = {
+  var state = cacheStates.add({
     data: {
       inputs: [],
       outputs: []
@@ -45,15 +49,15 @@ var interCache = function(slowFunc, options, priorFunc) {
       samplePrediction: false,
       argument: null
     }
-  };
+  });
 
   var distOnFuncs = function() {
 
     var f = priorFunc(options);
     
-    if (state.run.samplePrediction) {
+    if (state.get('run').samplePrediction) {
       // Return output of function applied to argument
-      return f(state.run.argument);  // TODO: learn regressionVariance, add it here
+      return f(state.get('run').argument);  // TODO: learn regressionVariance, add it here
       
     } else {
       // Soft conditioning on input-output data
@@ -61,8 +65,8 @@ var interCache = function(slowFunc, options, priorFunc) {
         function(input, output){
           return gaussianERP.score([f(input), options.regressionVariance], output); // 2
         },
-        state.data.inputs,
-        state.data.outputs);
+        state.get('data').inputs,
+        state.get('data').outputs);
       factor(sum(scores));
 
       // Return function
@@ -73,10 +77,10 @@ var interCache = function(slowFunc, options, priorFunc) {
   
   // Given argument, return distribution on return values
   var stochasticSurrogate = function(arg) {
-    _.assign(state.run, { samplePrediction: true, argument: arg });
+    state.set('run', { samplePrediction: true, argument: arg });
     var marginal = SampleGuide(distOnFuncs, {
       samples: options.prediction.samples,
-      params: state.guideParams
+      params: state.get('guideParams')
     });
     return marginal;
   };
@@ -85,15 +89,15 @@ var interCache = function(slowFunc, options, priorFunc) {
   // including new x-y pair)
   var updateParams = function(x, y) {
     // console.log('Updating params based on datapoint', x, y)
-    _.assign(state.run, { samplePrediction: false, argument: null });
+    state.set('run', { samplePrediction: false, argument: null });
     var newParams = Optimize(distOnFuncs, {
       steps: options.optimization.steps,
       method: {adagrad: {stepSize: options.optimization.stepSize }},
       estimator: 'ELBO',
-      params: state.guideParams
+      params: state.get('guideParams')
     });
     // console.log(state.guideParams, '->', newParams)
-    _.assign(state, { guideParams: newParams });
+    state.set('guideParams', newParams);
   }
 
   var fastFunc = function(arg, makeResult) {
@@ -108,14 +112,14 @@ var interCache = function(slowFunc, options, priorFunc) {
       console.log('  Estimated return value:', returnValMean);
       console.log('     Estimation variance:', returnValVariance);
       console.log('       True return value:', _trueReturnVal);
-      console.log('                  Params:', state.guideParams);
+      console.log('                  Params:', state.get('guideParams'));
     }
 
     if (returnValVariance > options.threshold) {
       // console.log('miss');
       var trueReturnVal = slowFunc(arg);
-      state.data.inputs.push(arg);
-      state.data.outputs.push(trueReturnVal);
+      state.get('data').inputs.push(arg);
+      state.get('data').outputs.push(trueReturnVal);
       updateParams(arg, trueReturnVal);
       return makeResult(arg, trueReturnVal, /*isCacheHit*/ false);
     } else {
@@ -128,6 +132,5 @@ var interCache = function(slowFunc, options, priorFunc) {
   return fastFunc;
   
 };
-
 
 console.log('library.wppl loaded.');
