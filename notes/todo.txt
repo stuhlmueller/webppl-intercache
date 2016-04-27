@@ -30,7 +30,7 @@ x abstract out prior on functions
 
 - Andreas: factor out mutation to library.js file
 
-- for running time per iteration plot, also make version of plots with window size 10
+x for running time per iteration plot, also make version of plots with window size 10
   (to better understand initial overhead)
 
 - test with polynomial distOnFuncs on (linear) binomial model

@@ -81,7 +81,7 @@ var mapWindowMean = function(list, windowSize, fn) {
 	}, indices)
 }
 
-var runTestAndWriteResult = function(label) {
+var runTestAndWriteResult = function(label, windowSize) {
 	var fileName = 'tests/progressOverTime/' + label + '.json';
 	var fastFunc = interCache(slowBinomialMean, options, makeLinearFunction);
 	var result = runTest(label, fastFunc, slowBinomialMean, 500);
@@ -91,7 +91,6 @@ var runTestAndWriteResult = function(label) {
 	var errorOverTime = map(function(r) { return Math.abs(r.slow.value - r.fast.value.result); }, hits);
 
 	// fraction of hits in a sliding window
-	var windowSize = 30;
 	var hitRate = mapWindowMean(result, windowSize, function(r) { return r.fast.value.isCacheHit ? 1 : 0 });
 
 	// Average time in a sliding window
@@ -112,6 +111,6 @@ var runTestAndWriteResult = function(label) {
 	});
 };
 
-runTestAndWriteResult('all-data')
-
+// runTestAndWriteResult('all-data', /*windowSize*/ 30);
+runTestAndWriteResult('all-data-window-10', /*windowSize*/ 10);
 
