@@ -12,6 +12,45 @@ var variance = function(erp) {
   return expectation(erp, function(x) { return (x - m) * (x - m); });
 };
 
+// Copied and modified from webppl/src/header.wppl
+var repeatIndexed = function(n, fn) {
+  var helper = function(m, offset) {
+    if (m == 0) {
+      return [];
+    } else if (m == 1) {
+      return [fn(offset)]; // Pass the offset to fn, this is the difference with the built-in repeat
+    } else {
+      var m1 = Math.ceil(m / 2),
+          m2 = m - m1;
+      return helper(m1, offset).concat(helper(m2, offset + m1));
+    }
+  }
+
+  return helper(n, 0);
+}
+
+var makePolynomialFunction = function(options) {
+  // Define a gaussian for each coefficient of the polynomrial
+  // based on guide params
+  var coefficients = repeatIndexed(options.degree, function(i) {
+    var guideMean = param(options.guide.meanFunc(i));
+    var guideVariance = param(options.guide.varianceFunc(i));
+    var priorMean = options.prior.meanFunc(i);
+    var priorVariance = options.prior.varianceFunc(i);
+
+    return sample(gaussianERP, [priorMean, priorVariance], {
+      guide: [gaussianERP, [guideMean, guideVariance]]
+    });
+  });
+
+  // Create function parameterized by the given coefficients
+  return function(x) {
+    return sum(mapIndexed(function(c, i) {
+      return c * Math.pow(x, i);
+    }, coefficients));
+  };
+};
+
 var makeLinearFunction = function(options) {
     // Define slope/offset and parameterize based on guide params
     var guideOffsetMean = param(options.guide.initialOffsetMean);
@@ -33,7 +72,6 @@ var makeLinearFunction = function(options) {
       return y;
     };
 };
-
 
 // Note: priorFunc calls the param function, which means that it must *only* be called
 // in distOnFuncs
