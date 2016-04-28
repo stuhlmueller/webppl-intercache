@@ -1,30 +1,32 @@
 var options = {
+  funcGeneration: {
+    prior: {
+      offsetMean: 0,
+      offsetVar: 5,
+      slopeMean: 1,
+      slopeVar: 5
+    },
 
-  prior: {
-    offsetMean: 0,
-    offsetVar: 5,
-    slopeMean: 1,
-    slopeVar: 5
+    guide: {
+      initialOffsetMean: 0,
+      initialOffsetVar: 3,
+      initialSlopeMean: 1,
+      initialSlopeVar: 3
+    }
   },
+  hyperparams: {
+    optimization: {
+      stepSize: .01,
+      steps: 1000
+    },
 
-  guide: {
-    initialOffsetMean: 0,
-    initialOffsetVar: 3,
-    initialSlopeMean: 1,
-    initialSlopeVar: 3
-  },
-
-  optimization: {
-    stepSize: .01,
-    steps: 1000
-  },
-
-  prediction: {
-    samples: 1000
-  },
-  
-  regressionVariance: 1,
-  threshold: .1
+    prediction: {
+      samples: 1000
+    },
+    
+    regressionVariance: 1,
+    threshold: .1
+  }
 }
 
 

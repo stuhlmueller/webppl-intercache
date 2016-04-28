@@ -91,7 +91,7 @@ var interCache = function(slowFunc, options, priorFunc) {
 
   var distOnFuncs = function() {
 
-    var f = priorFunc(options);
+    var f = priorFunc(options.funcGeneration);
     
     if (state.get('run').samplePrediction) {
       // Return output of function applied to argument
@@ -101,7 +101,7 @@ var interCache = function(slowFunc, options, priorFunc) {
       // Soft conditioning on input-output data
       var scores = map2(
         function(input, output){
-          return gaussianERP.score([f(input), options.regressionVariance], output); // 2
+          return gaussianERP.score([f(input), options.hyperparams.regressionVariance], output); // 2
         },
         state.get('data').inputs,
         state.get('data').outputs);
@@ -117,7 +117,7 @@ var interCache = function(slowFunc, options, priorFunc) {
   var stochasticSurrogate = function(arg) {
     state.set('run', { samplePrediction: true, argument: arg });
     var marginal = SampleGuide(distOnFuncs, {
-      samples: options.prediction.samples,
+      samples: options.hyperparams.prediction.samples,
       params: state.get('guideParams')
     });
     return marginal;
@@ -129,8 +129,8 @@ var interCache = function(slowFunc, options, priorFunc) {
     // console.log('Updating params based on datapoint', x, y)
     state.set('run', { samplePrediction: false, argument: null });
     var newParams = Optimize(distOnFuncs, {
-      steps: options.optimization.steps,
-      method: {adagrad: {stepSize: options.optimization.stepSize }},
+      steps: options.hyperparams.optimization.steps,
+      method: {adagrad: {stepSize: options.hyperparams.optimization.stepSize }},
       estimator: 'ELBO',
       params: state.get('guideParams')
     });
@@ -153,7 +153,7 @@ var interCache = function(slowFunc, options, priorFunc) {
       console.log('                  Params:', state.get('guideParams'));
     }
 
-    if (returnValVariance > options.threshold) {
+    if (returnValVariance > options.hyperparams.threshold) {
       // console.log('miss');
       var trueReturnVal = slowFunc(arg);
       state.get('data').inputs.push(arg);

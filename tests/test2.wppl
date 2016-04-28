@@ -55,27 +55,31 @@ var randomlyTryParameters = function(label, iterations) {
   var collectDatum = function(iterationIndex){
     console.log('Collecting data...');    
     var options = {
-      prior: {
-        offsetMean: 0,
-        offsetVar: 5,
-        slopeMean: 1,
-        slopeVar: 5
+      funcGeneration: {
+        prior: {
+          offsetMean: 0,
+          offsetVar: 5,
+          slopeMean: 1,
+          slopeVar: 5
+        },
+        guide: {
+          initialOffsetMean: 0,
+          initialOffsetVar: 3,
+          initialSlopeMean: 1,
+          initialSlopeVar: 3
+        }
       },
-      guide: {
-        initialOffsetMean: 0,
-        initialOffsetVar: 3,
-        initialSlopeMean: 1,
-        initialSlopeVar: 3
-      },
-      optimization: {
-        stepSize: 0.01,  // uniform(0, .5)
-        steps: 500 // Math.ceil(uniform(0, 2000))
-      },
-      prediction: {
-        samples: 500 // Math.ceil(uniform(0, 1000))
-      },
-      regressionVariance: 1, // uniform(0, 2)
-      threshold: 0.1 // uniform(0, 1)
+      hyperparams: {
+        optimization: {
+          stepSize: 0.01,  // uniform(0, .5)
+          steps: 500 // Math.ceil(uniform(0, 2000))
+        },
+        prediction: {
+          samples: 500 // Math.ceil(uniform(0, 1000))
+        },
+        regressionVariance: 1, // uniform(0, 2)
+        threshold: 0.1 // uniform(0, 1)
+      }
     };    
     var fastBinomialMean = interCache(slowBinomialMean, options, makeLinearFunction);
     var time = profile('fastBinomialMean', fastBinomialMean);
