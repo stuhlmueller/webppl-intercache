@@ -25,6 +25,7 @@ var slowBinomialMean = function(p) {
 
 var options = {
   funcGeneration: {
+    degree: 1,
     prior: {
       offsetMean: 0,
       offsetVar: 5,
@@ -97,6 +98,8 @@ var runTestAndWriteResult = function(label, windowSize, priorFunction) {
 
 	// Average time spent for cache hits
 	var avgCacheLookupTime = sum(map(function(r) { return r.fast.runtimeInMilliseconds }, hits)) / hits.length;
+
+  // TODO: Collect inputs and outputs and params in some format
 
 	json.write(fileName, {
 		errorOverTime: errorOverTime,

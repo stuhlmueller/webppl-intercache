@@ -1,5 +1,6 @@
 var options = {
   funcGeneration: {
+    degree: 1,
     prior: {
       offsetMean: 0,
       offsetVar: 5,
