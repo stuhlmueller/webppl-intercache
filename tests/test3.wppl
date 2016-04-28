@@ -56,13 +56,7 @@ var runTest = function(label, fastFunc, slowFunc, numberOfCalls) {
 	var p = uniform(0, 1);
 	var slowTimeAndValue = timeit(function() { return slowFunc(p); });
   	var fastTimeAndValue = timeit(function() {
-  		return fastFunc(p, function (arg, result, isCacheHit) {
-  			return {
-  				arg: arg,
-  				result: result,
-  				isCacheHit: isCacheHit
-  			};
-  		});
+  		return fastFunc(p);
   	});
 
   	return {

@@ -27,22 +27,21 @@ var slowBinomialMean = function(p) {
 
 //var fastBinomialMean = interCache(slowBinomialMean);
 
-var inferBinomialP = function(binomialMean) {
-  var p = uniform(0, 1);
-  var m = binomialMean(p);
-  condition(m < 3);  // we know that the mean is < 3
-  return p;
-}
+var getMeanResult = function(val) {
+  return typeof val === 'number'
+    ? val // slowBinomialMean
+    : val.result; // fastBinomialMean
+};
 
 var profile = function(label, binomialMean) {
   //console.log('\n' + label + ':');
   return timeit(function(){
     Rejection(function(){
-      return binomialMean(uniform(0, 1), function (arg, result, isCacheHit) {
-        var correctAnswer = N * arg;
-        var error = Math.abs(result - correctAnswer);
-        return error;
-      });
+      var p = uniform(0, 1);
+      var result = getMeanResult(binomialMean(p));
+      var correctAnswer = N * p;
+      var error = Math.abs(result - correctAnswer);
+      return error;
     }, 100); // .print();
   });
 };

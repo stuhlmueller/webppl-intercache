@@ -138,7 +138,7 @@ var interCache = function(slowFunc, options, priorFunc) {
     state.set('guideParams', newParams);
   }
 
-  var fastFunc = function(arg, makeResult) {
+  var fastFunc = function(arg) {
     var distOnReturnVals = stochasticSurrogate(arg);  // don't condition on data here
     var returnValMean = mean(distOnReturnVals);
     var returnValVariance = variance(distOnReturnVals);
@@ -159,11 +159,26 @@ var interCache = function(slowFunc, options, priorFunc) {
       state.get('data').inputs.push(arg);
       state.get('data').outputs.push(trueReturnVal);
       updateParams(arg, trueReturnVal);
-      return makeResult(arg, trueReturnVal, /*isCacheHit*/ false);
+      return {
+        arg: arg,
+        result: trueReturnVal,
+        estimatedReturnValue: returnValMean,
+        returnValVariance: returnValVariance,
+        isCacheHit: true,
+        data: state.get('data'), // Copy?
+        params: state.get('guideParams') // Copy?
+      };
     } else {
       // console.log('hit');
-      // Record error relative to the actual result
-      return makeResult(arg, returnValMean, /*isCacheHit*/ true);
+      return {
+        arg: arg,
+        result: returnValMean,
+        estimatedReturnValue: returnValMean,
+        returnValVariance: returnValVariance,
+        isCacheHit: false,
+        data: state.get('data'), // Copy?
+        params: state.get('guideParams') // Copy?
+      };
     }
   };
 
