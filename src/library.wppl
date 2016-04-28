@@ -164,7 +164,7 @@ var interCache = function(slowFunc, options, priorFunc) {
         result: trueReturnVal,
         estimatedReturnValue: returnValMean,
         returnValVariance: returnValVariance,
-        isCacheHit: true,
+        isCacheHit: false,
         data: state.get('data'), // Copy?
         params: state.get('guideParams') // Copy?
       };
@@ -175,7 +175,7 @@ var interCache = function(slowFunc, options, priorFunc) {
         result: returnValMean,
         estimatedReturnValue: returnValMean,
         returnValVariance: returnValVariance,
-        isCacheHit: false,
+        isCacheHit: true,
         data: state.get('data'), // Copy?
         params: state.get('guideParams') // Copy?
       };
