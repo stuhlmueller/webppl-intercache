@@ -165,7 +165,6 @@ var interCache = function(slowFunc, options, priorFunc) {
         estimatedReturnValue: returnValMean,
         returnValVariance: returnValVariance,
         isCacheHit: false,
-        data: state.get('data'), // Copy?
         params: state.get('guideParams') // Copy?
       };
     } else {
@@ -176,13 +175,16 @@ var interCache = function(slowFunc, options, priorFunc) {
         estimatedReturnValue: returnValMean,
         returnValVariance: returnValVariance,
         isCacheHit: true,
-        data: state.get('data'), // Copy?
         params: state.get('guideParams') // Copy?
       };
     }
   };
 
-  return fastFunc;
+  return {
+    func: fastFunc,
+    predictor: stochasticSurrogate,
+    data: state.get('data')
+  };
   
 };
 

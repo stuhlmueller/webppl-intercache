@@ -82,7 +82,7 @@ var randomlyTryParameters = function(label, iterations) {
         threshold: 0.1 // uniform(0, 1)
       }
     };    
-    var fastBinomialMean = interCache(slowBinomialMean, options, makeLinearFunction);
+    var fastBinomialMean = interCache(slowBinomialMean, options, makeLinearFunction).func;
     var time = profile('fastBinomialMean', fastBinomialMean);
     var datum = {
       stepSize: options.optimization.stepSize,

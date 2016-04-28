@@ -80,7 +80,7 @@ var mapWindowMean = function(list, windowSize, fn) {
 
 var runTestAndWriteResult = function(label, windowSize, priorFunction) {
 	var fileName = 'tests/progressOverTime/' + label + '.json';
-	var fastFunc = interCache(slowBinomialMean, options, priorFunction);
+	var fastFunc = interCache(slowBinomialMean, options, priorFunction).func;
 	var result = runTest(label, fastFunc, slowBinomialMean, 500);
 
 	// Accuracy over time for hits only
