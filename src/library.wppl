@@ -12,6 +12,10 @@ var variance = function(erp) {
   return expectation(erp, function(x) { return (x - m) * (x - m); });
 };
 
+var call = function(method, arg1, arg2, arg3) {
+  return method(arg1, arg2, arg3);
+};
+
 // Copied and modified from webppl/src/header.wppl
 var repeatIndexed = function(n, fn) {
   var helper = function(m, offset) {
@@ -33,10 +37,10 @@ var makePolynomialFunction = function(options) {
   // Define a gaussian for each coefficient of the polynomrial
   // based on guide params
   var coefficients = repeatIndexed(options.degree, function(i) {
-    var guideMean = param(options.guide.initialMeanFunc(i));
-    var guideVariance = param(options.guide.initialVarianceFunc(i));
-    var priorMean = options.prior.meanFunc(i);
-    var priorVariance = options.prior.varianceFunc(i);
+    var guideMean = param(call(options.guide.initialMeanFunc, i));
+    var guideVariance = param(call(options.guide.initialVarianceFunc, i));
+    var priorMean = call(options.prior.meanFunc, i);
+    var priorVariance = call(options.prior.varianceFunc, i);
 
     return sample(gaussianERP, [priorMean, priorVariance], {
       guide: [gaussianERP, [guideMean, guideVariance]]
