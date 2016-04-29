@@ -32,7 +32,7 @@ var repeatIndexed = function(n, fn) {
 var makePolynomialFunction = function(options) {
   // Define a gaussian for each coefficient of the polynomrial
   // based on guide params
-  var coefficients = repeatIndexed(options.funcGeneration.degree, function(i) {
+  var coefficients = repeatIndexed(options.degree, function(i) {
     var guideMean = param(options.guide.initialMeanFunc(i));
     var guideVariance = param(options.guide.initialVarianceFunc(i));
     var priorMean = options.prior.meanFunc(i);
