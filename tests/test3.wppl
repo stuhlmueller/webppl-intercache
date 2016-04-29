@@ -94,14 +94,19 @@ var mapWindowMean = function(list, windowSize, fn) {
 	}, indices)
 };
 
-var collectObservationsAndGeneratePredictions = function(cacheResult) {
-  // Fill in
+var generatePredictions = function(predictor, inputs, numSamples) {
+  return mapReduce1(append, function(input) {
+    return repeat(numSamples, function() {
+      return [input, sample(predictor(input))];
+    });
+  }, inputs);
 };
 
 var runTestAndWriteResult = function(label, windowSize, slowFunc, priorFunction, options) {
 	var fileName = 'tests/progressOverTime/' + label + '.json';
-	var fastFunc = interCache(slowFunc, options, priorFunction).func;
-	var result = runTest(label, fastFunc, slowFunc, 5);
+	var cacheResult = interCache(slowFunc, options, priorFunction);
+  var fastFunc = cacheResult.func;
+	var result = runTest(label, fastFunc, slowFunc, 500);
 
 	// Accuracy over time for hits only
 	var hits = filter(function(r) { return r.fast.value.isCacheHit; }, result);
@@ -119,18 +124,23 @@ var runTestAndWriteResult = function(label, windowSize, slowFunc, priorFunction,
 	// Average time spent for cache hits
 	var avgCacheLookupTime = sum(map(function(r) { return r.fast.runtimeInMilliseconds }, hits)) / hits.length;
 
-  // TODO: Collect inputs and outputs and params in some format
+  var predictions = generatePredictions(cacheResult.predictor, cacheResult.data.inputs, /*numSamples*/ 50)
 
 	json.write(fileName, {
 		errorOverTime: errorOverTime,
 		hitRate: hitRate,
 		avgTime: avgTime,
 		avgSlowTime: avgSlowTime,
-		avgCacheLookupTime: avgCacheLookupTime
+		avgCacheLookupTime: avgCacheLookupTime,
+    observedInputs: cacheResult.data.inputs,
+    observedOutputs: cacheResult.data.outputs,
+    predictedOutputs: predictions
 	});
 };
 
 // runTestAndWriteResult('all-data', /*windowSize*/ 30, makeLinearFunction, linearOptions);
 // runTestAndWriteResult('all-data-window-10', /*windowSize*/ 10, slowBinomialMean, makeLinearFunction, linearOptions);
 
-runTestAndWriteResult('linear-polynomial-test', /*windowSize*/ 2, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 1));
+runTestAndWriteResult('linear-polynomial-1', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 1));
+runTestAndWriteResult('linear-polynomial-2', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 2));
+runTestAndWriteResult('linear-polynomial-3', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 3));
