@@ -6,7 +6,6 @@ x Improvements to the system (Andreas)
 x MH will add RSA model that illustrates inferring lambda
 x MH will plot The Big Sum -- p(d|m) -- as a function of lambda
 
-
 x Make figures that illustrate performance on slowBinomial (Jason)
   x error as a function of time (different curves for different parameter settings)
   x to explore space of parameters, could do grid search or random sampling
@@ -26,26 +25,40 @@ x make better visualizations for current simple model
 x abstract out prior on functions
 
 
-- Next meeting: Fri 1pm
+x Next meeting: Fri 1pm
 
-- Andreas: factor out mutation to library.js file
+x Andreas: factor out mutation to library.js file
 
 x for running time per iteration plot, also make version of plots with window size 10
   (to better understand initial overhead)
 
-- test with polynomial distOnFuncs on (linear) binomial model
-  - let polynomial degree be an option
-  - also visualize raw data (input-output pairs observed) + best function learned
-    - (augment data collection)
-    
+x let polynomial degree be an option
+
+x (augment data collection)
+
+x MH: make model slower
+x MH: look into (uninformative) priors on regression variance
+x also visualize raw data (input-output pairs observed) + guide predictions
+
+
+- generatePredictions for non-input values as well
+- test with degree 3 and 4 polynomial distOnFuncs on (linear) binomial model, visualize
+- geom_smooth: how to get actual 95% confidence interval, or something like that?
+
 - test with binomial variance (or some other non-linear function)
+
+- verify that, if family of approximating functions is too limited (e.g. f(x)=1, f(x)=c), we don't converge to using the cache
+  - if we do converge to using the cache, think about how to fix it
+
 - test with polynomial distOnFuncs on mh's data
+  1. mh: fix prevalence and prior so that speaker2 is slowFunc of 1 argument
+  2. apply intercache to speaker2 with prevalence and prior fixed
+  3. generalize our cache to multiple arguments
+  4. try with slowFunc of multiple arguments (prevalence, prior, speakerOptimality)
 
-- MH: look into (uninformative) priors on regression variance
 
-- MH: make model slower
-
-- test with neural net distOnFuncs on binomial model (andreas)
+- figure out neural net function prior (andreas)
+- test with neural net distOnFuncs on binomial model
 - test with neural net distOnFuncs on mh's data
 
 
