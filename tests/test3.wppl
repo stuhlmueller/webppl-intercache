@@ -23,9 +23,8 @@ var slowBinomialMean = function(p) {
   return mean(slowBinomial(p));
 };
 
-var options = {
+var linearOptions = {
   funcGeneration: {
-    degree: 1,
     prior: {
       offsetMean: 0,
       offsetVar: 5,
@@ -52,6 +51,23 @@ var options = {
   }
 };
 
+var createPolynomialOptions = function(degree) {
+  return {
+    funcGeneration: {
+      degree: degree,
+      guide: {
+        initialMeanFunc: function(i) { return i },
+        initialVarianceFunc: function(i) { return 3 }
+      },
+      prior: {
+        meanFunc: function(i) { return i },
+        varianceFunc: function(i) { return 5 }
+      }
+    },
+    hyperparams: linearOptions.hyperparams
+  };
+};
+
 var runTest = function(label, fastFunc, slowFunc, numberOfCalls) {
   console.log('\n' + label + ':');
 
@@ -76,12 +92,16 @@ var mapWindowMean = function(list, windowSize, fn) {
 		var window = map(fn, list.slice(i, i + windowSize));
 		return sum(window) / windowSize;
 	}, indices)
-}
+};
 
-var runTestAndWriteResult = function(label, windowSize, priorFunction) {
+var collectObservationsAndGeneratePredictions = function(cacheResult) {
+  // Fill in
+};
+
+var runTestAndWriteResult = function(label, windowSize, slowFunc, priorFunction, options) {
 	var fileName = 'tests/progressOverTime/' + label + '.json';
-	var fastFunc = interCache(slowBinomialMean, options, priorFunction).func;
-	var result = runTest(label, fastFunc, slowBinomialMean, 500);
+	var fastFunc = interCache(slowFunc, options, priorFunction).func;
+	var result = runTest(label, fastFunc, slowFunc, 5);
 
 	// Accuracy over time for hits only
 	var hits = filter(function(r) { return r.fast.value.isCacheHit; }, result);
@@ -110,6 +130,7 @@ var runTestAndWriteResult = function(label, windowSize, priorFunction) {
 	});
 };
 
-// runTestAndWriteResult('all-data', /*windowSize*/ 30, makeLinearFunction);
-runTestAndWriteResult('all-data-window-10', /*windowSize*/ 10, makeLinearFunction);
+// runTestAndWriteResult('all-data', /*windowSize*/ 30, makeLinearFunction, linearOptions);
+// runTestAndWriteResult('all-data-window-10', /*windowSize*/ 10, slowBinomialMean, makeLinearFunction, linearOptions);
 
+runTestAndWriteResult('linear-polynomial-test', /*windowSize*/ 2, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 1));
