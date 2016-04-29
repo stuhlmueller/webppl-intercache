@@ -1,7 +1,7 @@
-// to run: webppl generics.wppl --require genUtils
+// to run: webppl generics.wppl --require gen-utils
 
 var previter = 500
-var prevprioriter = 500
+var prevprioriter = 100
 
 console.log('inferring prevalence of property-category pairs...')
 var prevalenceERP = IncrementalMH(prevalenceModel, 
@@ -70,15 +70,18 @@ var modelAnalysis = function(){
 					var prevalencePropCat = prevalenceERPobject[property][k]
 					var prevalence = sample(prevalencePropCat)
 
+					var t0 = genUtils.getTime()
 					// EXPENSIVE FUNCTION
 			     	var predictionERP = speaker2(prevalence, prior, speakerOptimality, 1)
+					var t1 = genUtils.getTime()
+					console.log("expensive function call complete in " + (t1-t0) + " ms")
 
 			     	var linkedERP = guessingLink(predictionERP, phi)
 					
 					var scr = sum(map(function(d) {
 								    return linkedERP.score([], responseDictionary[d])
 										}, responseData))
-					console.log(scr)
+					// console.log(scr)
 
 					factor(scr)
 
@@ -89,11 +92,12 @@ var modelAnalysis = function(){
 		})
 	query.add(["speakerOptimality","na","na","na"], speakerOptimality)
 	// query.add(["phi","na","na","na"], phi)
+
 	return query
 }
 
 
-var mhiter = 500
+var mhiter = 20
 var burn = mhiter/2
 console.log('doing the full bayesian dance...')
 
