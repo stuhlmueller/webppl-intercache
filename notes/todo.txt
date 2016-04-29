@@ -45,6 +45,8 @@ x also visualize raw data (input-output pairs observed) + guide predictions
 - test with degree 3 and 4 polynomial distOnFuncs on (linear) binomial model, visualize
 - geom_smooth: how to get actual 95% confidence interval, or something like that?
 
+- look at predictions when we only have few data points from slowFunc
+
 - test with binomial variance (or some other non-linear function)
 
 - verify that, if family of approximating functions is too limited (e.g. f(x)=1, f(x)=c), we don't converge to using the cache
