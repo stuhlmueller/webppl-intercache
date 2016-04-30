@@ -49,7 +49,7 @@ var makePolynomialFunction = function(options) {
 
   // Create function parameterized by the given coefficients
   return function(x) {
-    return sum(mapIndexed(function(c, i) {
+    return sum(mapIndexed(function(i, c) {
       return c * Math.pow(x, i);
     }, coefficients));
   };
