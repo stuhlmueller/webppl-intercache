@@ -1,0 +1,40 @@
+x Improvements to the system (Andreas)
+  x Turn into webppl package
+  x Don't resample/use factors when you predict (to avoid seemingly low variance due to particle collapse)
+  x Use single score/factor instead of many
+
+x MH will add RSA model that illustrates inferring lambda
+x MH will plot The Big Sum -- p(d|m) -- as a function of lambda
+
+x Make figures that illustrate performance on slowBinomial (Jason)
+  x error as a function of time (different curves for different parameter settings)
+  x to explore space of parameters, could do grid search or random sampling
+
+x Andreas: figure out why current system doesn't learn
+  x would using SampleGuide instead of SMC fix the problem?
+    do this if disableConditioning is on (rename)
+
+x Send a progress report to Noah that describes what we have done
+  so far (and what we will do next); maybe send to MH and Andreas first
+
+x make better visualizations for current simple model
+  x think about what figure we want
+  x send proposal for figure (w/o actually making it) to mh and andreas
+  x then gather data (if needed) and make figure
+
+x abstract out prior on functions
+
+x Next meeting: Fri 1pm
+
+x Andreas: factor out mutation to library.js file
+
+x for running time per iteration plot, also make version of plots with window size 10
+  (to better understand initial overhead)
+
+x let polynomial degree be an option
+
+x (augment data collection)
+
+x MH: make model slower
+x MH: look into (uninformative) priors on regression variance
+x also visualize raw data (input-output pairs observed) + guide predictions
