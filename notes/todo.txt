@@ -16,7 +16,10 @@
   4. try with slowFunc of multiple arguments (prevalence, prior, speakerOptimality)
 
 
-- figure out neural net function prior (andreas)
+x figure out neural net function prior (andreas)
+  - make it work with wider range of input values (of different magnitudes)
+  - integrate it with intercache system
+  
 - test with neural net distOnFuncs on binomial model
 - test with neural net distOnFuncs on mh's data
 
