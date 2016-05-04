@@ -1,118 +1,98 @@
 // to run: webppl generics.wppl --require gen-utils
-
-var previter = 500
-var prevprioriter = 100
-
-console.log('inferring prevalence of property-category pairs...')
-var prevalenceERP = IncrementalMH(prevalenceModel, 
-										previter, 
-										{
-											"verbose":"true",
-											"verboseLag":previter/10,
-											"burn": previter/2
-										}
-									)
-console.log('prevalence of property-category pairs inferred!')
-
-// reorganize prevalenceERP into a structured object
-var prevalenceERPobject = _.object(map(function(p){
-	var categories = _.uniq(_.pluck(subset(df_truth, "Property", p), "Category"))
-	return [p, _.object(map(function(k){
-		[k, marginalizeERP(prevalenceERP, [k,p])]
-	}, categories))]
-}, properties))
-
-
-console.log('inferring prevalence priors...')
-var priorERP = IncrementalMH(priorModel, 
-	prevprioriter, 
-	{
-		"verbose":"true", 
-		"verboseLag":previter/10,
-		"burn": prevprioriter/2
-	}
-	)
-console.log('prevalence priors inferred!')
-
-// reorganize priorERP into a structured object
-var priorERPobject = _.object(map(function(p){
-	return [p, marginalizeERP(priorERP, p)]
-}, properties))
-
-// model produces "generic is true" vs. "mu"; data is as "agree-key" vs. "disagree-key"
-var responseDictionary = {
-	"agree-key":"generic is true",
-	"disagree-key":"mu"
-}
-
 var modelAnalysis = function(){
-
 	// speakerOptimality is our continuous variable that wants to be intercached
 	var speakerOptimality = uniform(0,20)
+	/////////////////////////////////////
+	var t0 = genUtils.getTime()
+	////SLOW FUNCTION////
+ 	var predictionERP = speaker2(speakerOptimality)
+ 	/////////////////////
+	var t1 = genUtils.getTime()
+	console.log("slow function call complete in " + (t1-t0) + " ms")
+	
+	var scr = sum(map(function(d) {
+				    return predictionERP.score([], responseDictionary[d])
+						}, responseData))
+	factor(scr)
 
-	var phi = 0.001 //note, there must be at least a tiny amount of noise, 
-	// otherwise for the items with 0 prevalence, the model crashes
-
-	foreach(properties,
-		function(property){
-
-			var propertyData = subset(df_truth, "Property", property) // subset data
-			var categories = _.uniq(_.pluck(propertyData, "Category")) // each property has its own unique categories for which we have data
-
-			var priorProperty_ERP = priorERPobject[property]
-			var prior = sample(priorProperty_ERP)
-
-			foreach(categories,
-				function(k){
-
-					var responseData = _.pluck(subset(propertyData, "Category", k), "response")
-					
-					var prevalencePropCat = prevalenceERPobject[property][k]
-					var prevalence = sample(prevalencePropCat)
-
-					var t0 = genUtils.getTime()
-					// EXPENSIVE FUNCTION
-			     	var predictionERP = speaker2(prevalence, prior, speakerOptimality, 1)
-					var t1 = genUtils.getTime()
-					console.log("expensive function call complete in " + (t1-t0) + " ms")
-
-			     	var linkedERP = guessingLink(predictionERP, phi)
-					
-					var scr = sum(map(function(d) {
-								    return linkedERP.score([], responseDictionary[d])
-										}, responseData))
-					// console.log(scr)
-
-					factor(scr)
-
-					query.add(["generic_linked",property, k, "0"], 
-								Math.exp(linkedERP.score([], "generic is true")))
-
-				})
-		})
+	query.add(["generic_linked",property, k, "0"], 
+				Math.exp(predictionERP.score([], "generic is true")))
 	query.add(["speakerOptimality","na","na","na"], speakerOptimality)
-	// query.add(["phi","na","na","na"], phi)
 
 	return query
 }
 
-
-var mhiter = 20
+var mhiter = 2
 var burn = mhiter/2
 console.log('doing the full bayesian dance...')
 
-var posterior = IncrementalMH(modelAnalysis,
-	mhiter, {"verbose":true, verboseLag: mhiter/10, "burnin":burn})
+var posterior = MCMC(modelAnalysis, {samples: mhiter, verbose:true, burnin:burn})
 
 console.log('FBT complete')
 
 // posterior
-
+// posterior
 var outfile = 'results/generics-previter'+previter+
 				'_prevprioriter'+prevprioriter+
 				'-IncrMH'+ mhiter+'_burn'+burn+'.csv'
 
 genUtils.erpWriter(posterior, outfile)
 console.log('wrote to... ' + outfile )
+
+
+//// below is the code for doing a for-loop
+// var modelAnalysis = function(){
+
+// 	// speakerOptimality is our continuous variable that wants to be intercached
+// 	var speakerOptimality = uniform(0,20)
+
+// 	var phi = 0 //note, there must be at least a tiny amount of noise, 
+// 	// otherwise for the items with 0 prevalence, the model crashes
+
+
+// 	// foreach(properties,
+// 		// function(property){
+
+// 			// var propertyData = subset(df_truth, "Property", property) // subset data
+// 			// var categories = _.uniq(_.pluck(propertyData, "Category")) // each property has its own unique categories for which we have data
+
+// 			// var priorProperty_ERP = priorERPobject[property]
+// 			// var prior = sample(priorProperty_ERP)
+
+// 			// foreach(categories,
+// 				// function(k){
+
+// 					// var responseData = _.pluck(subset(propertyData, "Category", k), "response")
+					
+// 					// var prevalencePropCat = prevalenceERPobject[property][k]
+// 					// var prevalence = sample(prevalencePropCat)
+
+// 					var t0 = genUtils.getTime()
+// 					// SLOW FUNCTION
+// 			     	var predictionERP = speaker2(prevalence, prior, speakerOptimality, 1)
+// 					var t1 = genUtils.getTime()
+// 					console.log("slow function call complete in " + (t1-t0) + " ms")
+
+// 			     	// var linkedERP = guessingLink(predictionERP, phi)
+					
+// 					var scr = sum(map(function(d) {
+// 								    return predictionERP.score([], responseDictionary[d])
+// 										}, responseData))
+// 					// console.log(scr)
+
+// 					factor(scr)
+
+// 					query.add(["generic_linked",property, k, "0"], 
+// 								Math.exp(predictionERP.score([], "generic is true")))
+
+// 				// })
+// 		// })
+// 	query.add(["speakerOptimality","na","na","na"], speakerOptimality)
+// 	// query.add(["phi","na","na","na"], phi)
+
+// 	return query
+// }
+
+
 
 	

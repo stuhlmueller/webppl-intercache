@@ -1,5 +1,5 @@
 ---
-title: "Intercache applied to Binomial"
+title: "Polynomial Degree 3: Linear function"
 author: "mht, jf, ast"
 date: "April 21, 2016"
 output: html_document
@@ -10,8 +10,9 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(jsonlite)
+library(data.table)
 
-d<- fromJSON(readLines("all-data-window-10.json"))
+d<- fromJSON(readLines("linear-polynomial-3.json"))
 
 df<-bind_rows(
   data.frame(
@@ -57,7 +58,7 @@ ggplot(df %>% filter(param%in%c('errorOverTime', 'hitRate')),
 ```
 
 Left: The absolute error over time for cache hits only.
-Right: The average hit rate over a window of 10 calls, starting with a particular call.
+Right: The average hit rate over a window of 20 calls, starting with a particular call.
 
 ```{r echo=FALSE, message=F, warning=F}
 ggplot(df %>% filter(param%in%c('avgTime')), 
@@ -72,4 +73,17 @@ ggplot(df %>% filter(param%in%c('avgTime')),
              aes(yintercept = val, linetype = param))
 ```
 
-Average query time over a window of 10 calls, compared to global average of non-cached query (avgSlowTime) and average time of cache hits (avgCacheLookupTime).
+Average query time over a window of 20 calls, compared to global average of non-cached query (avgSlowTime) and average time of cache hits (avgCacheLookupTime).
+
+```{r echo=FALSE, message=F, warning=F}
+dfObserved <- data.frame(inpt = d$observedInputs, 
+                         outpt = d$observedOutputs)
+
+dfPredicted <- data.frame(d$predictedOutputs) %>%
+  dplyr::rename(inpt = X1, outpt = X2)
+  
+ggplot(data=dfObserved, mapping=aes(x=inpt, y=outpt)) +
+  geom_point() +
+  geom_point(data=dfPredicted, color="blue")
+```
+
