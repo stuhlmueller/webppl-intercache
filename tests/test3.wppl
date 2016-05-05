@@ -150,6 +150,7 @@ var runTestAndWriteResult = function(label, windowSize, slowFunc, priorFunction,
 // runTestAndWriteResult('all-data', /*windowSize*/ 30, makeLinearFunction, linearOptions);
 // runTestAndWriteResult('all-data-window-10', /*windowSize*/ 10, slowBinomialMean, makeLinearFunction, linearOptions);
 
+runTestAndWriteResult('linear-polynomial-0', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 0));
 runTestAndWriteResult('linear-polynomial-1', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 1));
 runTestAndWriteResult('linear-polynomial-2', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 2));
 runTestAndWriteResult('linear-polynomial-3', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 3));
