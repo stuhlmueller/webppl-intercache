@@ -1,5 +1,5 @@
 ---
-title: "Polynomial Degree 3: Linear function"
+title: "Polynomial Degree 1: Linear function"
 author: "mht, jf, ast"
 date: "April 21, 2016"
 output: html_document
@@ -12,7 +12,7 @@ library(ggplot2)
 library(jsonlite)
 library(data.table)
 
-d<- fromJSON(readLines("linear-polynomial-3.json"))
+d<- fromJSON(readLines("linear-polynomial-1.json"))
 
 df<-bind_rows(
   data.frame(
@@ -76,14 +76,26 @@ ggplot(df %>% filter(param%in%c('avgTime')),
 Average query time over a window of 20 calls, compared to global average of non-cached query (avgSlowTime) and average time of cache hits (avgCacheLookupTime).
 
 ```{r echo=FALSE, message=F, warning=F}
-dfObserved <- data.frame(inpt = d$observedInputs, 
-                         outpt = d$observedOutputs)
+dfObserved <- data.frame(input = d$observedInputs, 
+                         output = d$observedOutputs)
 
 dfPredicted <- data.frame(d$predictedOutputs) %>%
-  dplyr::rename(inpt = X1, outpt = X2)
+  dplyr::rename(input = X1, output = X2)
   
-ggplot(data=dfObserved, mapping=aes(x=inpt, y=outpt)) +
+dfPredictedStDev <- aggregate(dfPredicted, list(input=dfPredicted$input), sd)
+
+ggplot(data=dfObserved, mapping=aes(x=input, y=output)) +
   geom_point() +
-  geom_point(data=dfPredicted, color="blue")
+  geom_smooth(data=dfPredicted, color="blue") +
+  geom_point(data=dfPredicted, color="green")
+#  geom_point(data=dfPredictedStDev, color="red")
 ```
 
+Predictions of the cache on evenly spaced data points, compared to real data
+
+```{r echo=FALSE, message=F, warning=F}
+ggplot(data=dfPredictedStDev, mapping=aes(x=input, y=output)) +
+  geom_smooth(color="red", span=0.1)
+```
+
+Standard deviation of samples at each prediction point.
