@@ -1,5 +1,5 @@
 // Run using:
-// webppl tests/test2.wppl --require webppl-timeit --require webppl-json --require .
+// webppl tests/test3.wppl --require webppl-timeit --require webppl-json --require .
 
 var N = 15;
 
@@ -94,8 +94,17 @@ var mapWindowMean = function(list, windowSize, fn) {
 	}, indices)
 };
 
-var generatePredictions = function(predictor, inputs, numSamples) {
+var generatePredictions = function(predictor, numInputs, minSupport, maxSupport, numSamples) {
+  // Generate a list of numInputs points, starting at minSupport, ending at maxSupport.
+  // Subtract 1 so that we include the top of the support.
+  console.log("Generating " + numInputs + " predictions...");
+  var distanceBetweenConsecutiveInputs = (maxSupport - minSupport) / (numInputs - 1);
+  console.log(distanceBetweenConsecutiveInputs);
+  var inputs = repeatIndexed(numInputs, function (i) {
+    return minSupport + i * distanceBetweenConsecutiveInputs;
+  });
   return mapReduce1(append, function(input) {
+    console.log("Point " + input);
     return repeat(numSamples, function() {
       return [input, sample(predictor(input))];
     });
@@ -124,7 +133,7 @@ var runTestAndWriteResult = function(label, windowSize, slowFunc, priorFunction,
 	// Average time spent for cache hits
 	var avgCacheLookupTime = sum(map(function(r) { return r.fast.runtimeInMilliseconds }, hits)) / hits.length;
 
-  var predictions = generatePredictions(cacheResult.predictor, cacheResult.data.inputs, /*numSamples*/ 50)
+  var predictions = generatePredictions(cacheResult.predictor, /*numInputs*/ 100, /*minSupport*/ 0, /*maxSupport*/ 1, /*numSamples*/ 50)
 
 	json.write(fileName, {
 		errorOverTime: errorOverTime,
