@@ -120,7 +120,7 @@ var runTestAndWriteResult = function(label, windowSize, slowFunc, priorFunction,
 	var fileName = 'tests/progressOverTime/' + label + '.json';
 	var cacheResult = interCache(slowFunc, options, priorFunction);
   var fastFunc = cacheResult.func;
-	var result = runTest(label, fastFunc, slowFunc, 500);
+	var result = runTest(label, fastFunc, slowFunc, 300);
 
 	// Accuracy over time for hits only
 	var hits = filter(function(r) { return r.fast.value.isCacheHit; }, result);
