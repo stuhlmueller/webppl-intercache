@@ -155,14 +155,16 @@ var runTestAndWriteResult = function(label, windowSize, slowFunc, priorFunction,
 // runTestAndWriteResult('all-data', /*windowSize*/ 30, makeLinearFunction, linearOptions);
 // runTestAndWriteResult('all-data-window-10', /*windowSize*/ 10, slowBinomialMean, makeLinearFunction, linearOptions);
 
+// Linear function (slowBinomialMean)
 runTestAndWriteResult('linear-polynomial-0', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 0));
-// runTestAndWriteResult('linear-polynomial-1', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 1));
-// runTestAndWriteResult('linear-polynomial-2', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 2));
-// runTestAndWriteResult('linear-polynomial-3', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 3));
-// runTestAndWriteResult('linear-polynomial-4', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 4));
+runTestAndWriteResult('linear-polynomial-1', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 1));
+runTestAndWriteResult('linear-polynomial-2', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 2));
+runTestAndWriteResult('linear-polynomial-3', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 3));
+runTestAndWriteResult('linear-polynomial-4', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 4));
 
-
-// runTestAndWriteResult('quadratic-polynomial-1', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 1));
-// runTestAndWriteResult('quadratic-polynomial-2', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 2));
-// runTestAndWriteResult('quadratic-polynomial-3', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 3));
-// runTestAndWriteResult('quadratic-polynomial-4', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 4));
+// Quadratic function (slowBinomialVariance)
+runTestAndWriteResult('quadratic-polynomial-0', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 0));
+runTestAndWriteResult('quadratic-polynomial-1', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 1));
+runTestAndWriteResult('quadratic-polynomial-2', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 2));
+runTestAndWriteResult('quadratic-polynomial-3', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 3));
+runTestAndWriteResult('quadratic-polynomial-4', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 4));
