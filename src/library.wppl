@@ -97,22 +97,21 @@ var interCache = function(slowFunc, options, priorFunc) {
 
     var f = priorFunc(options.funcGeneration);
     
-    if (state.get('run').samplePrediction) {
-      // Return output of function applied to argument
-      return f(state.get('run').argument);  // TODO: learn regressionVariance, add it here
-      
-    } else {
-      // Soft conditioning on input-output data
-      var regressionVariance = param(options.initialRegressionVariance);
-      var scores = map2(
-        function(input, output){
-          return gaussianERP.score([f(input), regressionVariance], output); // 2
-        },
-        state.get('data').inputs,
-        state.get('data').outputs);
-      factor(sum(scores));
+    // Soft conditioning on input-output data
+    var regressionVariance = param(options.initialRegressionVariance);
+    var scores = map2(
+      function(input, output){
+        return gaussianERP.score([f(input), regressionVariance], output); // 2
+      },
+      state.get('data').inputs,
+      state.get('data').outputs);
+    factor(sum(scores));
 
-      // Return function
+    // TODO: We are returning two different types based on samplePrediction.
+    // Consider homogenizing the type.
+    if (state.get('run').samplePrediction) {
+      return f(state.get('run').argument);
+    } else {
       return f;
     }
   };
