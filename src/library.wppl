@@ -103,9 +103,10 @@ var interCache = function(slowFunc, options, priorFunc) {
       
     } else {
       // Soft conditioning on input-output data
+      var regressionVariance = param(options.initialRegressionVariance);
       var scores = map2(
         function(input, output){
-          return gaussianERP.score([f(input), options.hyperparams.regressionVariance], output); // 2
+          return gaussianERP.score([f(input), regressionVariance], output); // 2
         },
         state.get('data').inputs,
         state.get('data').outputs);

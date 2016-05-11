@@ -24,10 +24,9 @@ var options = {
     prediction: {
       samples: 1000
     },
-    
-    regressionVariance: 1,
     threshold: .1
-  }
+  },
+  initialRegressionVariance: 1
 }
 
 

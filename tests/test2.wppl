@@ -78,9 +78,9 @@ var randomlyTryParameters = function(label, iterations) {
         prediction: {
           samples: 500 // Math.ceil(uniform(0, 1000))
         },
-        regressionVariance: 1, // uniform(0, 2)
         threshold: 0.1 // uniform(0, 1)
-      }
+      },
+      initialRegressionVariance: 1
     };    
     var fastBinomialMean = interCache(slowBinomialMean, options, makeLinearFunction).func;
     var time = profile('fastBinomialMean', fastBinomialMean);

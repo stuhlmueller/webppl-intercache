@@ -50,9 +50,9 @@ var linearOptions = {
     prediction: {
       samples: 500
     },
-    regressionVariance: 1,
     threshold: 0.1
-  }
+  },
+  initialRegressionVariance: 1
 };
 
 var createPolynomialOptions = function(degree) {
@@ -68,7 +68,8 @@ var createPolynomialOptions = function(degree) {
         varianceFunc: function(i) { return 5 }
       }
     },
-    hyperparams: linearOptions.hyperparams
+    hyperparams: linearOptions.hyperparams,
+    initialRegressionVariance: linearOptions.initialRegressionVariance
   };
 };
 
@@ -161,7 +162,7 @@ runTestAndWriteResult('linear-polynomial-0', /*windowSize*/ 20, slowBinomialMean
 // runTestAndWriteResult('linear-polynomial-4', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 4));
 
 
-runTestAndWriteResult('quadratic-polynomial-1', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 1));
-runTestAndWriteResult('quadratic-polynomial-2', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 2));
-runTestAndWriteResult('quadratic-polynomial-3', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 3));
-runTestAndWriteResult('quadratic-polynomial-4', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 4));
+// runTestAndWriteResult('quadratic-polynomial-1', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 1));
+// runTestAndWriteResult('quadratic-polynomial-2', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 2));
+// runTestAndWriteResult('quadratic-polynomial-3', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 3));
+// runTestAndWriteResult('quadratic-polynomial-4', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 4));
