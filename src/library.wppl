@@ -101,8 +101,12 @@ var interCache = function(slowFunc, options, priorFunc) {
     if (state.get('run').samplePrediction) {
       // Output of function applied to argument becomes the mean of a gaussian.
       // The variance is optimized based on the factor statement below.
+      // Since the current 'then' block is executed in the context of SampleGuide,
+      // the sample call will actually use the guide.
       var resultFromPrior = f(state.get('run').argument);
-      return sample(gaussianERP, [resultFromPrior, regressionVariance]);      
+      return sample(gaussianERP, [resultFromPrior, regressionVariance], {
+        guide: [gaussianERP, [resultFromPrior, regressionVariance]]
+      });      
     } else {
       // Soft conditioning on input-output data
       var scores = map2(
