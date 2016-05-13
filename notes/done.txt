@@ -38,3 +38,13 @@ x (augment data collection)
 x MH: make model slower
 x MH: look into (uninformative) priors on regression variance
 x also visualize raw data (input-output pairs observed) + guide predictions
+
+x generatePredictions for non-input values as well
+x test with degree 3 and 4 polynomial distOnFuncs on (linear) binomial model, visualize
+
+x learn regressionVariance, include when sampling predictions
+
+x then re-examine:
+  - (geom_smooth: how to get actual 95% confidence interval, or something like that?)
+  x test with binomial variance (or some other non-linear function)
+  x verify that, if family of approximating functions is too limited (e.g. f(x)=1, f(x)=c), we don't converge to using the cache
