@@ -93,40 +93,39 @@ var interCache = function(slowFunc, options, priorFunc) {
     }
   });
 
-  var samplePrediction = function() {
-    var f = priorFunc(options.funcGeneration);
-    var regressionVariance = param(options.initialRegressionVariance);
+  var distOnFuncs = function() {
 
-    // Output of function applied to argument becomes the mean of a gaussian.
-    // The variance is optimized based on the factor statement below.
-    // Since the current 'then' block is executed in the context of SampleGuide,
-    // the sample call will actually use the guide.
-    var resultFromPrior = f(state.get('run').argument);
-    return sample(gaussianERP, [resultFromPrior, regressionVariance], {
-      guide: [gaussianERP, [resultFromPrior, regressionVariance]]
-    });   
+    var f = priorFunc(options.funcGeneration);
+    var regressionVariance = param(options.initialRegressionVariance);  
+    
+    if (state.get('run').samplePrediction) {
+      // Output of function applied to argument becomes the mean of a gaussian.
+      // The variance is optimized based on the factor statement below.
+      // Since the current 'then' block is executed in the context of SampleGuide,
+      // the sample call will actually use the guide.
+      var resultFromPrior = f(state.get('run').argument);
+      return sample(gaussianERP, [resultFromPrior, regressionVariance], {
+        guide: [gaussianERP, [resultFromPrior, regressionVariance]]
+      });      
+    } else {
+      // Soft conditioning on input-output data
+      var scores = map2(
+        function(input, output){
+          return gaussianERP.score([f(input), regressionVariance], output);
+        },
+        state.get('data').inputs,
+        state.get('data').outputs);
+      factor(sum(scores));
+
+      return f;
+    }
   };
 
-  var optimizationObjective = function() {
-    var f = priorFunc(options.funcGeneration);
-    var regressionVariance = param(options.initialRegressionVariance);
-
-    // Soft conditioning on input-output data
-    var scores = map2(
-      function(input, output){
-        return gaussianERP.score([f(input), regressionVariance], output);
-      },
-      state.get('data').inputs,
-      state.get('data').outputs);
-    factor(sum(scores));
-
-    return f;
-  };
   
   // Given argument, return distribution on return values
   var stochasticSurrogate = function(arg) {
-    state.set('run', { argument: arg });
-    var marginal = SampleGuide(samplePrediction, {
+    state.set('run', { samplePrediction: true, argument: arg });
+    var marginal = SampleGuide(distOnFuncs, {
       samples: options.hyperparams.prediction.samples,
       params: state.get('guideParams')
     });
@@ -137,8 +136,8 @@ var interCache = function(slowFunc, options, priorFunc) {
   // including new x-y pair)
   var updateParams = function(x, y) {
     // console.log('Updating params based on datapoint', x, y)
-    state.set('run', { argument: null });
-    var newParams = Optimize(optimizationObjective, {
+    state.set('run', { samplePrediction: false, argument: null });
+    var newParams = Optimize(distOnFuncs, {
       steps: options.hyperparams.optimization.steps,
       method: {adagrad: {stepSize: options.hyperparams.optimization.stepSize }},
       estimator: 'ELBO',
