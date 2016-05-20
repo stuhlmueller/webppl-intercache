@@ -33,6 +33,29 @@ var repeatIndexed = function(n, fn) {
   return helper(n, 0);
 }
 
+// TODO: How to use randomInteger
+var randomIntegerGuide = function(arg) {
+  var params = dists.isParams(arg) ? arg : {n: arg};
+  return sample(RandomInteger(params), {
+    guide: RandomInteger(params)
+  });
+};
+
+var selectN = function(n, ar, forceIncludeLast) {
+  if (n === 0) {
+    return [];
+  }
+
+  if (n < ar.length) {
+    var selectedIndex = forceIncludeLast ? ar.length - 1 : randomIntegerGuide(ar.length);
+    var newArray = removeAt(ar, selectedIndex);
+    var subResult = selectN(n - 1, newArray, /*forceIncludLast*/ false);
+    return push(subResult, ar[selectedIndex]);
+  }
+
+  return ar;
+}
+
 var makePolynomialFunction = function(options) {
   // Define a gaussian for each coefficient of the polynomrial
   // based on guide params
@@ -109,12 +132,13 @@ var interCache = function(slowFunc, options, priorFunc) {
       });      
     } else {
       // Soft conditioning on input-output data
-      var scores = map2(
-        function(input, output){
+      var examples = selectN(20, zip(state.get('data').inputs, state.get('data').outputs), /*forceIncludeLast*/ true);
+      var scores = map(
+        function(ex){
+          var input = ex[0], output = ex[1];
           return Gaussian({ mu: f(input), sigma: regressionVariance }).score(output);
         },
-        state.get('data').inputs,
-        state.get('data').outputs);
+        examples);
       factor(sum(scores));
 
       return f;
