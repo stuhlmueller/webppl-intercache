@@ -42,8 +42,8 @@ var makePolynomialFunction = function(options) {
     var priorMean = call(options.prior.meanFunc, i);
     var priorVariance = call(options.prior.varianceFunc, i);
 
-    return sample(gaussianERP, [priorMean, priorVariance], {
-      guide: [gaussianERP, [guideMean, guideVariance]]
+    return sample(Gaussian({ mu: priorMean, sigma: priorVariance }), {
+      guide: Gaussian({ mu: guideMean, sigma: guideVariance })
     });
   });
 
@@ -63,11 +63,11 @@ var makeLinearFunction = function(options) {
     var guideSlopeVar = param(options.guide.initialSlopeVar);
 
     // Priors on offset and slope
-    var offset = sample(gaussianERP, [options.prior.offsetMean, options.prior.offsetVar], {
-      guide: [gaussianERP, [guideOffsetMean, guideOffsetVar]]
+    var offset = sample(Gaussian({ mu: options.prior.offsetMean, sigma: options.prior.offsetVar }), {
+      guide: Gaussian({ mu: guideOffsetMean, sigma: guideOffsetVariance })
     });
-    var slope = sample(gaussianERP, [options.prior.slopeMean, options.prior.slopeVar], {
-      guide: [gaussianERP, [guideSlopeMean, guideSlopeVar]]
+    var slope = sample(Gaussian({ mu: options.prior.slopeMean, sigma: options.prior.slopeVar }), {
+      guide: Gaussian({ mu: guideSlopeMean, sigma: guideSlopeVariance })
     });
 
     // Create function parameterized by offset and slope
@@ -104,14 +104,14 @@ var interCache = function(slowFunc, options, priorFunc) {
       // Since the current 'then' block is executed in the context of SampleGuide,
       // the sample call will actually use the guide.
       var resultFromPrior = f(state.get('run').argument);
-      return sample(gaussianERP, [resultFromPrior, regressionVariance], {
-        guide: [gaussianERP, [resultFromPrior, regressionVariance]]
+      return sample(Gaussian({ mu: resultFromPrior, sigma: regressionVariance }), {
+        guide: Gaussian({ mu: resultFromPrior, sigma: regressionVariance})
       });      
     } else {
       // Soft conditioning on input-output data
       var scores = map2(
         function(input, output){
-          return gaussianERP.score([f(input), regressionVariance], output);
+          return Gaussian({ mu: f(input), sigma: regressionVariance }).score(output);
         },
         state.get('data').inputs,
         state.get('data').outputs);
