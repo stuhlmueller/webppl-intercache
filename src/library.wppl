@@ -162,8 +162,9 @@ var interCache = function(slowFunc, options, priorFunc) {
       console.log('                  Params:', state.get('guideParams'));
     }
 
-    if (returnValVariance > options.hyperparams.threshold) {
+    if (returnValVariance > options.hyperparams.threshold || flip(options.hyperparams.bypassCacheProbability)) {
       // console.log('miss');
+      console.log("Variance was low: " + (returnValVariance <= options.hyperparams.threshold));
       var trueReturnVal = slowFunc(arg);
       state.get('data').inputs.push(arg);
       state.get('data').outputs.push(trueReturnVal);
