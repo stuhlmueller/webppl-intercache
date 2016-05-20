@@ -45,7 +45,8 @@ var linearOptions = {
   hyperparams: {
     optimization: {
       stepSize: 0.01,
-      steps: 500
+      steps: 500,
+      maxNumExamples: 20
     },
     prediction: {
       samples: 500

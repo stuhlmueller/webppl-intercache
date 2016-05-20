@@ -132,7 +132,8 @@ var interCache = function(slowFunc, options, priorFunc) {
       });      
     } else {
       // Soft conditioning on input-output data
-      var examples = selectN(20, zip(state.get('data').inputs, state.get('data').outputs), /*forceIncludeLast*/ true);
+      var numExamples = options.hyperparams.optimization.maxNumExamples || 20;
+      var examples = selectN(numExamples, zip(state.get('data').inputs, state.get('data').outputs), /*forceIncludeLast*/ true);
       var scores = map(
         function(ex){
           var input = ex[0], output = ex[1];
