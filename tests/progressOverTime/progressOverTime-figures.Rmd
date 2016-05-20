@@ -1,5 +1,5 @@
 ---
-title: "Polynomial Degree 1: Linear function"
+title: "True function: degree 2\nApproximating function: degree 4"
 author: "mht, jf, ast"
 date: "April 21, 2016"
 output: html_document
@@ -12,7 +12,7 @@ library(ggplot2)
 library(jsonlite)
 library(data.table)
 
-d<- fromJSON(readLines("linear-polynomial-1.json"))
+d<- fromJSON(readLines("quadratic-polynomial-4.json"))
 
 df<-bind_rows(
   data.frame(
