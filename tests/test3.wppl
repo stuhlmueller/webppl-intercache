@@ -55,7 +55,7 @@ var linearOptions = {
   initialRegressionVariance: 1
 };
 
-var createPolynomialOptions = function(degree) {
+var createPolynomialOptions = function(degree, ignoreFunction) {
   return {
     funcGeneration: {
       degree: degree,
@@ -69,7 +69,8 @@ var createPolynomialOptions = function(degree) {
       }
     },
     hyperparams: linearOptions.hyperparams,
-    initialRegressionVariance: linearOptions.initialRegressionVariance
+    initialRegressionVariance: linearOptions.initialRegressionVariance,
+    ignoreDataPointPredicate: ignoreFunction
   };
 };
 
@@ -160,11 +161,15 @@ runTestAndWriteResult('linear-polynomial-0', /*windowSize*/ 20, slowBinomialMean
 runTestAndWriteResult('linear-polynomial-1', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 1));
 runTestAndWriteResult('linear-polynomial-2', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 2));
 runTestAndWriteResult('linear-polynomial-3', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 3));
-runTestAndWriteResult('linear-polynomial-4', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 4));
+// runTestAndWriteResult('linear-polynomial-4', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 4));
 
 // Quadratic function (slowBinomialVariance)
 runTestAndWriteResult('quadratic-polynomial-0', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 0));
 runTestAndWriteResult('quadratic-polynomial-1', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 1));
 runTestAndWriteResult('quadratic-polynomial-2', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 2));
-runTestAndWriteResult('quadratic-polynomial-3', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 3));
-runTestAndWriteResult('quadratic-polynomial-4', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 4));
+
+// Make new options for ignoring certain data points
+runTestAndWriteResult('quadratic-polynomial-3', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction,
+  createPolynomialOptions(/*degree*/ 3, function(arg) { return arg > 0.75; }));
+runTestAndWriteResult('quadratic-polynomial-4', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction,
+  createPolynomialOptions(/*degree*/ 4, function(arg) { return arg > 0.75; }));
