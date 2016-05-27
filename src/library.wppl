@@ -2,6 +2,11 @@ var SHOW_DEBUG_INFO = false;
 
 var cacheStates = webpplIntercache.cacheStates;
 
+var printTime = function(f) {
+  var obj = timeit(f);
+  console.log('time ' + obj.runtimeInMilliseconds);
+  return obj.value;
+}
 
 var mean = function(erp) {
   return expectation(erp, function(x) {return x;});
