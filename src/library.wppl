@@ -46,14 +46,16 @@ var selectN = function(n, ar, forceIncludeLast) {
     return [];
   }
 
-  if (n < ar.length) {
-    var selectedIndex = forceIncludeLast ? ar.length - 1 : randomIntegerGuide(ar.length);
-    var newArray = removeAt(ar, selectedIndex);
-    var subResult = selectN(n - 1, newArray, /*forceIncludLast*/ false);
-    return push(subResult, ar[selectedIndex]);
+  if (n >= ar.length) {
+    return ar;
   }
 
-  return ar;
+  if (forceIncludeLast) {
+    return push(_.sample(ar.slice(0, -1), n-1), ar[ar.length - 1]);
+  }
+  else {
+    return _.sample(ar, n);
+  }
 }
 
 var makePolynomialFunction = function(options) {
