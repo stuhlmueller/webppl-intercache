@@ -1,25 +1,26 @@
 - try high-degree polynomial as estimator for quadratic function, but only provide training data for part of space
-  - this may have been successful.
+  - only supply data for smaller region; use high-degree polynomial
   - we want to see hit rate vs. iteration vs. input-val (or, discretized into region)
-    - this could be done: (a) facet by region ([0, 0.25], ..., [0.75,1.0])
-    - or (b) facet by iteration-epoch (0-100, 100-200, 200-300,...)
-  - to confirm: try this with different regions e.g. [0.75, 1], [0,0.25], [0.4,0.6]
+    - this could be done: (a) facet by width (small, medium, large)
+    - MH WILL DO (b) facet by iteration-epoch (0-100, 100-200, 200-300,...)
+      (given data and infrastructure for (a) exists)
   - do this independent of data restriction experiment below
   -> check whether variance in predictions is higher for unseen part of space
-  - this will probably fail
-  - (then we'll need to look into making variational guide for polynomial parameters less independent (not mean-field))
 
 - restrict how much data to learn from so that runtime doesn't slow down linearly (select a random subset of previous data? always include current data point)
-  - this didn't work.
-  - this may be because the selectN was implemented inefficiently. need to try _.sample(data, n), while enforcing keeping last data-point.
+  - more efficiently select subset: don't zip data first, get subset directly, maybe by sampling indices first
+    - secret randomness: Math.floor(util.random() * 10);
 
 - continue learning with some probability even if predicted variance is low (so that we converge to correct function eventually if it's past of our approximating functions)
+
+- 1pm Monday meeting
 
 - test with polynomial distOnFuncs on mh's data
   x mh: fix prevalence and prior so that speaker2 is slowFunc of 1 argument
   - apply intercache to speaker2 with prevalence and prior fixed
   - (generalize our cache to multiple arguments)
   - (try with slowFunc of multiple arguments (prevalence, prior, speakerOptimality))
+
 
 - would running more or bigger gradient steps give closer approximations to linear functions for polynomials?
 
