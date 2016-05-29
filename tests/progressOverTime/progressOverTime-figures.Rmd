@@ -14,34 +14,55 @@ library(data.table)
 
 d<- fromJSON(readLines("linear-polynomial-1.json"))
 
-df<-bind_rows(
-  data.frame(
-    param = "errorOverTime",
-    iter = seq(1, length(d$errorOverTime)),
-    val = d$errorOverTime
-  ),
-  data.frame(
-    param = "hitRate",
-    iter = seq(1, length(d$hitRate)),
-    val = d$hitRate
-  ),
-  data.frame(
-    param = "avgTime",
-    iter = seq(1, length(d$avgTime)),
-    val = d$avgTime
-  ),
-  data.frame(
-    param = "avgSlowTime",
-    iter = seq(1, length(d$avgSlowTime)),
-    val = d$avgSlowTime
-  ),
-  data.frame(
-    param = "avgCacheLookupTime",
-    iter = seq(1, length(d$avgCacheLookupTime)),
-    val = d$avgCacheLookupTime
+if (length(d$errorOverTime) == 0) {
+  df<-bind_rows(
+    data.frame(
+      param = "hitRate",
+      iter = seq(1, length(d$hitRate)),
+      val = d$hitRate
+    ),
+    data.frame(
+      param = "avgTime",
+      iter = seq(1, length(d$avgTime)),
+      val = d$avgTime
+    ),
+    data.frame(
+      param = "avgSlowTime",
+      iter = seq(1, length(d$avgSlowTime)),
+      val = d$avgSlowTime
+    )
   )
-) %>%
-  mutate(param = factor(param)) #same as mutate(df, param=factor(param))
+} else {
+  df<-bind_rows(
+    data.frame(
+      param = "errorOverTime",
+      iter = seq(1, length(d$errorOverTime)),
+      val = d$errorOverTime
+    ),
+    data.frame(
+      param = "hitRate",
+      iter = seq(1, length(d$hitRate)),
+      val = d$hitRate
+    ),
+    data.frame(
+      param = "avgTime",
+      iter = seq(1, length(d$avgTime)),
+      val = d$avgTime
+    ),
+    data.frame(
+      param = "avgSlowTime",
+      iter = seq(1, length(d$avgSlowTime)),
+      val = d$avgSlowTime
+    ),
+    data.frame(
+      param = "avgCacheLookupTime",
+      iter = seq(1, length(d$avgCacheLookupTime)),
+      val = d$avgCacheLookupTime
+    )
+  )
+}
+
+df <- mutate(df, param = factor(param))
 ```
 
 
