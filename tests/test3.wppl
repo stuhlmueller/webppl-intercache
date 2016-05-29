@@ -157,19 +157,36 @@ var runTestAndWriteResult = function(label, windowSize, slowFunc, priorFunction,
 // runTestAndWriteResult('all-data-window-10', /*windowSize*/ 10, slowBinomialMean, makeLinearFunction, linearOptions);
 
 // Linear function (slowBinomialMean)
-runTestAndWriteResult('linear-polynomial-0', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 0));
-runTestAndWriteResult('linear-polynomial-1', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 1));
-runTestAndWriteResult('linear-polynomial-2', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 2));
-runTestAndWriteResult('linear-polynomial-3', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 3));
-// runTestAndWriteResult('linear-polynomial-4', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 4));
+// runTestAndWriteResult('linear-polynomial-0', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 0));
+// runTestAndWriteResult('linear-polynomial-1', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 1));
+// runTestAndWriteResult('linear-polynomial-2', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 2));
+// runTestAndWriteResult('linear-polynomial-3', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(degree 3));
+// // runTestAndWriteResult('linear-polynomial-4', /*windowSize*/ 20, slowBinomialMean, makePolynomialFunction, createPolynomialOptions(/*degree*/ 4));
 
-// Quadratic function (slowBinomialVariance)
-runTestAndWriteResult('quadratic-polynomial-0', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 0));
-runTestAndWriteResult('quadratic-polynomial-1', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 1));
-runTestAndWriteResult('quadratic-polynomial-2', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 2));
+// // Quadratic function (slowBinomialVariance)
+// runTestAndWriteResult('quadratic-polynomial-0', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 0));
+// runTestAndWriteResult('quadratic-polynomial-1', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 1));
+// runTestAndWriteResult('quadratic-polynomial-2', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 2));
 
 // Make new options for ignoring certain data points
-runTestAndWriteResult('quadratic-polynomial-3', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction,
-  createPolynomialOptions(/*degree*/ 3, function(arg) { return arg > 0.75; }));
-runTestAndWriteResult('quadratic-polynomial-4', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction,
-  createPolynomialOptions(/*degree*/ 4, function(arg) { return arg > 0.75; }));
+// runTestAndWriteResult('quadratic-polynomial-3', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction,
+//   createPolynomialOptions(/*degree*/ 3, function(arg) { return arg > 0.75; }));
+// runTestAndWriteResult('quadratic-polynomial-4', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction,
+//   createPolynomialOptions(/*degree*/ 4, function(arg) { return arg > 0.75; }));
+
+// Tests with ignore functions
+var makeUpperBoundedIgnoreFunction = function(threshold) {
+  return function(arg) {
+    return arg < threshold;
+  };
+};
+var ignoreUpperBounds = [0.2, 0.5, 0.8];
+
+// Tried to use Array.prototype.forEach and _.each, but the callback was not called
+map(function(threshold) {
+  var ignoreFunction = makeUpperBoundedIgnoreFunction(threshold);
+  runTestAndWriteResult('quadratic-polynomial-4-threshold-' + threshold, /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction,
+    createPolynomialOptions(/*degree*/ 4, ignoreFunction));
+  runTestAndWriteResult('quadratic-polynomial-5-threshold-' + threshold, /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction,
+    createPolynomialOptions(/*degree*/ 5, ignoreFunction));
+}, ignoreUpperBounds);
