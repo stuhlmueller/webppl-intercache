@@ -12,7 +12,7 @@ library(ggplot2)
 library(jsonlite)
 library(data.table)
 
-d<- fromJSON(readLines("linear-polynomial-1.json"))
+d<- fromJSON(readLines("quadratic-polynomial-4-threshold-0.8.json"))
 
 if (length(d$errorOverTime) == 0) {
   df<-bind_rows(
@@ -65,8 +65,6 @@ if (length(d$errorOverTime) == 0) {
 df <- mutate(df, param = factor(param))
 ```
 
-
-
 ```{r echo=FALSE, message=F, warning=F}
 ggplot(df %>% filter(param%in%c('errorOverTime', 'hitRate')), 
        aes(x=iter,
@@ -116,7 +114,45 @@ Predictions of the cache on evenly spaced data points, compared to real data
 
 ```{r echo=FALSE, message=F, warning=F}
 ggplot(data=dfPredictedStDev, mapping=aes(x=input, y=output)) +
-  geom_smooth(color="red", span=0.1)
+  geom_point()+
+  geom_smooth(color="red", span=0.7)
 ```
 
 Standard deviation of samples at each prediction point.
+
+
+```{r echo=FALSE, message=F, warning=F}
+getIgnoreData <- function(file_name, nickname) {
+  json <- fromJSON(readLines(file_name))
+  d <- data.frame(
+    iter = seq(1, length(json$args)),
+    arg = json$args,
+    hit = json$rawHitRate
+  )
+  # split into buckets of width 0.5
+  d <- group_by(d, argBucket = floor(arg * 10), epoch=ceiling(iter/50))
+  d <- summarise(d, hitRate = mean(hit, na.rm=TRUE))
+  d <- mutate(d, label=nickname)
+  
+  return(d)
+}
+
+dIgnore <- bind_rows(
+  getIgnoreData('quadratic-polynomial-4-threshold-0.2.json', '4, 0.2'),
+  getIgnoreData('quadratic-polynomial-5-threshold-0.2.json', '5, 0.2'),
+  getIgnoreData('quadratic-polynomial-4-threshold-0.5.json', '4, 0.5'),
+  getIgnoreData('quadratic-polynomial-5-threshold-0.5.json', '5, 0.5'),
+  getIgnoreData('quadratic-polynomial-4-threshold-0.8.json', '4, 0.8'),
+  getIgnoreData('quadratic-polynomial-5-threshold-0.8.json', '5, 0.8')
+)
+
+ggplot(dIgnore,
+       aes(x=argBucket,# make x-axis INPUT VALUE
+           y=hitRate))+
+  geom_point()+
+  geom_smooth()+
+  xlab('Input value bucket')+
+  ylab('Hit rate') +
+  facet_grid(label~epoch)
+
+```
