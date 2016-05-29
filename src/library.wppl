@@ -38,28 +38,32 @@ var repeatIndexed = function(n, fn) {
   return helper(n, 0);
 }
 
-// TODO: How to use randomInteger
-var randomIntegerGuide = function(arg) {
-  var params = dists.isParams(arg) ? arg : {n: arg};
-  return sample(RandomInteger(params), {
-    guide: RandomInteger(params)
-  });
-};
+var indexWith = function(array, indices) {
+  return map(function(i) {
+    return array[i];
+  }, indices);
+}
 
-var selectN = function(n, ar, forceIncludeLast) {
+// Returns a pair of two arrays: the selected inputs, and the selected outputs
+var selectN = function(n, inputs, outputs, forceIncludeLast) {
   if (n === 0) {
-    return [];
+    return [[], []];
   }
 
-  if (n >= ar.length) {
-    return ar;
+  var length = inputs.length;
+  if (n >= length) {
+    return [inputs, outputs];
   }
 
   if (forceIncludeLast) {
-    return push(_.sample(ar.slice(0, -1), n-1), ar[ar.length - 1]);
+    // Secret randomness
+    var indices = repeat(n - 1, function() { return Math.floor(util.random() * length) });
+    return [push(indexWith(inputs, indices), inputs[length - 1]),
+            push(indexWith(outputs, indices), outputs[length - 1])];
   }
   else {
-    return _.sample(ar, n);
+    var indices = repeat(n, function() { return Math.floor(util.random() * length); });
+    return [indexWith(inputs, indices), indexWith(outputs, indices)];
   }
 }
 
@@ -140,13 +144,13 @@ var interCache = function(slowFunc, options, priorFunc) {
     } else {
       // Soft conditioning on input-output data
       var numExamples = options.hyperparams.optimization.maxNumExamples || 20;
-      var examples = selectN(numExamples, zip(state.get('data').inputs, state.get('data').outputs), /*forceIncludeLast*/ true);
-      var scores = map(
-        function(ex){
-          var input = ex[0], output = ex[1];
+      var examples = selectN(numExamples, state.get('data').inputs, state.get('data').outputs, /*forceIncludeLast*/ true);
+      var inputs = examples[0], outputs = examples[1];
+      var scores = map2(
+        function(input, output){
           return Gaussian({ mu: f(input), sigma: regressionVariance }).score(output);
         },
-        examples);
+        inputs, outputs);
       factor(sum(scores));
 
       return f;
