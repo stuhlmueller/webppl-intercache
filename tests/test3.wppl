@@ -80,7 +80,7 @@ var runTest = function(label, fastFunc, slowFunc, numberOfCalls) {
 
   var indices = range(numberOfCalls);
   return map(function(index) {
-  	console.log('Starting iteration ' + index);
+  	console.log('Starting iteration ' + index + ', test ' + label);
   	var p = uniform(0, 1);
   	var slowTimeAndValue = timeit(function() { return slowFunc(p); });
   	var fastTimeAndValue = timeit(function() { return fastFunc(p); });
@@ -122,7 +122,7 @@ var runTestAndWriteResult = function(label, windowSize, slowFunc, priorFunction,
 	var fileName = 'tests/progressOverTime/' + label + '.json';
 	var cacheResult = interCache(slowFunc, options, priorFunction);
   var fastFunc = cacheResult.func;
-	var result = runTest(label, fastFunc, slowFunc, 500);
+	var result = runTest(label, fastFunc, slowFunc, 300);
 
 	// Accuracy over time for hits only
 	var hits = filter(function(r) { return r.fast.value.isCacheHit; }, result);
