@@ -48,3 +48,13 @@ x then re-examine:
   - (geom_smooth: how to get actual 95% confidence interval, or something like that?)
   x test with binomial variance (or some other non-linear function)
   x verify that, if family of approximating functions is too limited (e.g. f(x)=1, f(x)=c), we don't converge to using the cache
+
+  - we want to see hit rate vs. iteration vs. input-val (or, discretized into region)
+    - this could be done: (a) facet by width (small, medium, large)
+    - MH WILL DO (b) facet by iteration-epoch (0-100, 100-200, 200-300,...)
+      (given data and infrastructure for (a) exists)
+  - do this independent of data restriction experiment below
+
+- restrict how much data to learn from so that runtime doesn't slow down linearly (select a random subset of previous data? always include current data point)
+  - more efficiently select subset: don't zip data first, get subset directly, maybe by sampling indices first
+    - secret randomness: Math.floor(util.random() * 10);
