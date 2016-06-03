@@ -45,7 +45,8 @@ var linearOptions = {
   hyperparams: {
     optimization: {
       stepSize: 0.01,
-      steps: 500
+      steps: 500,
+      maxNumExamples: 20
     },
     prediction: {
       samples: 500
@@ -139,7 +140,7 @@ var runTestAndWriteResult = function(label, windowSize, slowFunc, priorFunction,
 	// Average time spent for cache hits
 	var avgCacheLookupTime = sum(map(function(r) { return r.fast.runtimeInMilliseconds }, hits)) / hits.length;
 
-  var predictions = generatePredictions(cacheResult.predictor, /*numInputs*/ 51, /*minSupport*/ 0, /*maxSupport*/ 1, /*numSamples*/ 50);
+  var predictions = generatePredictions(cacheResult.predictor, /*numInputs*/ 51, /*minSupport*/ 0, /*maxSupport*/ 1, /*numSamples*/ 30);
 
   var args = map(function(r) { return r.fast.value.arg; }, result);
 
