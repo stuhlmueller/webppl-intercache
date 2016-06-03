@@ -45,7 +45,8 @@ var linearOptions = {
   hyperparams: {
     optimization: {
       stepSize: 0.01,
-      steps: 500
+      steps: 500,
+      maxNumExamples: 20
     },
     prediction: {
       samples: 500
@@ -56,7 +57,7 @@ var linearOptions = {
   initialRegressionVariance: 1
 };
 
-var createPolynomialOptions = function(degree) {
+var createPolynomialOptions = function(degree, ignoreFunction) {
   return {
     funcGeneration: {
       degree: degree,
@@ -70,7 +71,8 @@ var createPolynomialOptions = function(degree) {
       }
     },
     hyperparams: linearOptions.hyperparams,
-    initialRegressionVariance: linearOptions.initialRegressionVariance
+    initialRegressionVariance: linearOptions.initialRegressionVariance,
+    ignoreDataPointPredicate: ignoreFunction
   };
 };
 
@@ -79,7 +81,7 @@ var runTest = function(label, fastFunc, slowFunc, numberOfCalls) {
 
   var indices = range(numberOfCalls);
   return map(function(index) {
-  	console.log('Starting iteration ' + index);
+  	console.log('Starting iteration ' + index + ', test ' + label);
   	var p = uniform(0, 1);
   	var slowTimeAndValue = timeit(function() { return slowFunc(p); });
   	var fastTimeAndValue = timeit(function() { return fastFunc(p); });
@@ -121,7 +123,7 @@ var runTestAndWriteResult = function(label, windowSize, slowFunc, priorFunction,
 	var fileName = 'tests/progressOverTime/' + label + '.json';
 	var cacheResult = interCache(slowFunc, options, priorFunction);
   var fastFunc = cacheResult.func;
-	var result = runTest(label, fastFunc, slowFunc, 500);
+	var result = runTest(label, fastFunc, slowFunc, 300);
 
 	// Accuracy over time for hits only
 	var hits = filter(function(r) { return r.fast.value.isCacheHit; }, result);
@@ -139,7 +141,7 @@ var runTestAndWriteResult = function(label, windowSize, slowFunc, priorFunction,
 	// Average time spent for cache hits
 	var avgCacheLookupTime = sum(map(function(r) { return r.fast.runtimeInMilliseconds }, hits)) / hits.length;
 
-  var predictions = generatePredictions(cacheResult.predictor, /*numInputs*/ 51, /*minSupport*/ 0, /*maxSupport*/ 1, /*numSamples*/ 50)
+  var predictions = generatePredictions(cacheResult.predictor, /*numInputs*/ 51, /*minSupport*/ 0, /*maxSupport*/ 1, /*numSamples*/ 30)
 
 	json.write(fileName, {
 		errorOverTime: errorOverTime,
@@ -167,5 +169,9 @@ runTestAndWriteResult('linear-polynomial-3', /*windowSize*/ 20, slowBinomialMean
 // runTestAndWriteResult('quadratic-polynomial-0', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 0));
 // runTestAndWriteResult('quadratic-polynomial-1', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 1));
 runTestAndWriteResult('quadratic-polynomial-2', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 2));
-runTestAndWriteResult('quadratic-polynomial-3', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 3));
-runTestAndWriteResult('quadratic-polynomial-4', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction, createPolynomialOptions(/*degree*/ 4));
+
+// Make new options for ignoring certain data points
+runTestAndWriteResult('quadratic-polynomial-3', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction,
+  createPolynomialOptions(/*degree*/ 3, function(arg) { return arg > 0.75; }));
+runTestAndWriteResult('quadratic-polynomial-4', /*windowSize*/ 20, slowBinomialVariance, makePolynomialFunction,
+  createPolynomialOptions(/*degree*/ 4, function(arg) { return arg > 0.75; }));

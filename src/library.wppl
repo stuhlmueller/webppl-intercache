@@ -2,6 +2,11 @@ var SHOW_DEBUG_INFO = false;
 
 var cacheStates = webpplIntercache.cacheStates;
 
+var printTime = function(f) {
+  var obj = timeit(f);
+  console.log('time ' + obj.runtimeInMilliseconds);
+  return obj.value;
+}
 
 var mean = function(erp) {
   return expectation(erp, function(x) {return x;});
@@ -13,7 +18,7 @@ var variance = function(erp) {
 };
 
 var call = function(method, arg1, arg2, arg3) {
-  return method(arg1, arg2, arg3);
+  return method && method(arg1, arg2, arg3);
 };
 
 // Copied and modified from webppl/src/header.wppl
@@ -31,6 +36,35 @@ var repeatIndexed = function(n, fn) {
   }
 
   return helper(n, 0);
+}
+
+var indexWith = function(array, indices) {
+  return map(function(i) {
+    return array[i];
+  }, indices);
+}
+
+// Returns a pair of two arrays: the selected inputs, and the selected outputs
+var selectN = function(n, inputs, outputs, forceIncludeLast) {
+  if (n === 0) {
+    return [[], []];
+  }
+
+  var length = inputs.length;
+  if (n >= length) {
+    return [inputs, outputs];
+  }
+
+  if (forceIncludeLast) {
+    // Secret randomness
+    var indices = repeat(n - 1, function() { return Math.floor(util.random() * length) });
+    return [push(indexWith(inputs, indices), inputs[length - 1]),
+            push(indexWith(outputs, indices), outputs[length - 1])];
+  }
+  else {
+    var indices = repeat(n, function() { return Math.floor(util.random() * length); });
+    return [indexWith(inputs, indices), indexWith(outputs, indices)];
+  }
 }
 
 var makePolynomialFunction = function(options) {
@@ -109,12 +143,14 @@ var interCache = function(slowFunc, options, priorFunc) {
       });      
     } else {
       // Soft conditioning on input-output data
+      var numExamples = options.hyperparams.optimization.maxNumExamples || 20;
+      var examples = selectN(numExamples, state.get('data').inputs, state.get('data').outputs, /*forceIncludeLast*/ true);
+      var inputs = examples[0], outputs = examples[1];
       var scores = map2(
         function(input, output){
           return Gaussian({ mu: f(input), sigma: regressionVariance }).score(output);
         },
-        state.get('data').inputs,
-        state.get('data').outputs);
+        inputs, outputs);
       factor(sum(scores));
 
       return f;
@@ -166,8 +202,14 @@ var interCache = function(slowFunc, options, priorFunc) {
       // console.log('miss');
       console.log("Variance was low: " + (returnValVariance <= options.hyperparams.threshold));
       var trueReturnVal = slowFunc(arg);
-      state.get('data').inputs.push(arg);
-      state.get('data').outputs.push(trueReturnVal);
+      if (!call(options.ignoreDataPointPredicate, arg)) {
+        state.get('data').inputs.push(arg);
+        state.get('data').outputs.push(trueReturnVal);
+      }
+      else if (SHOW_DEBUG_INFO) {
+        console.log("Ignoring " + arg);
+      }
+
       updateParams(arg, trueReturnVal);
       return {
         arg: arg,
