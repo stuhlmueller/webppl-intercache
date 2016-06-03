@@ -1,4 +1,4 @@
-var SHOW_DEBUG_INFO = false;
+var SHOW_DEBUG_INFO = true;
 
 var cacheStates = webpplIntercache.cacheStates;
 
@@ -71,14 +71,10 @@ var makePolynomialFunction = function(options) {
   // Define a gaussian for each coefficient of the polynomrial
   // based on guide params
   var coefficients = repeatIndexed(options.degree + 1, function(i) {
-    var guideMean = param(call(options.guide.initialMeanFunc, i));
-    var guideVariance = param(call(options.guide.initialVarianceFunc, i));
     var priorMean = call(options.prior.meanFunc, i);
     var priorVariance = call(options.prior.varianceFunc, i);
 
-    return sample(Gaussian({ mu: priorMean, sigma: priorVariance }), {
-      guide: Gaussian({ mu: guideMean, sigma: guideVariance })
-    });
+    return sample(Gaussian({ mu: priorMean, sigma: priorVariance }));
   });
 
   // Create function parameterized by the given coefficients
@@ -119,29 +115,14 @@ var interCache = function(slowFunc, options, priorFunc) {
     data: {
       inputs: [],
       outputs: []
-    },
-    guideParams: {},
-    run: {
-      samplePrediction: false,
-      argument: null
     }
   });
 
-  var distOnFuncs = function() {
-
+  var distOnReturnVals = function(arg) {
     var f = priorFunc(options.funcGeneration);
-    var regressionVariance = param(options.initialRegressionVariance);  
+    var regressionVariance = (options.initialRegressionVariance);  
     
-    if (state.get('run').samplePrediction) {
-      // Output of function applied to argument becomes the mean of a gaussian.
-      // The variance is optimized based on the factor statement below.
-      // Since the current 'then' block is executed in the context of SampleGuide,
-      // the sample call will actually use the guide.
-      var resultFromPrior = f(state.get('run').argument);
-      return sample(Gaussian({ mu: resultFromPrior, sigma: regressionVariance }), {
-        guide: Gaussian({ mu: resultFromPrior, sigma: regressionVariance})
-      });      
-    } else {
+    {
       // Soft conditioning on input-output data
       var numExamples = options.hyperparams.optimization.maxNumExamples || 20;
       var examples = selectN(numExamples, state.get('data').inputs, state.get('data').outputs, /*forceIncludeLast*/ true);
@@ -153,35 +134,22 @@ var interCache = function(slowFunc, options, priorFunc) {
         inputs, outputs);
       factor(sum(scores));
 
-      return f;
+      return f(arg);
     }
   };
 
   
   // Given argument, return distribution on return values
   var stochasticSurrogate = function(arg) {
-    state.set('run', { samplePrediction: true, argument: arg });
-    var marginal = SampleGuide(distOnFuncs, {
-      samples: options.hyperparams.prediction.samples,
-      params: state.get('guideParams')
+    var marginal = Infer({
+      method: 'MCMC',
+      kernel: 'HMC'
+    }, function() {
+      return distOnReturnVals(arg);
     });
+
     return marginal;
   };
-
-  // Update state.guideParams using variational inference (based on all data points observed so far,
-  // including new x-y pair)
-  var updateParams = function(x, y) {
-    // console.log('Updating params based on datapoint', x, y)
-    state.set('run', { samplePrediction: false, argument: null });
-    var newParams = Optimize(distOnFuncs, {
-      steps: options.hyperparams.optimization.steps,
-      method: {adagrad: {stepSize: options.hyperparams.optimization.stepSize }},
-      estimator: 'ELBO',
-      params: state.get('guideParams')
-    });
-    // console.log(state.guideParams, '->', newParams)
-    state.set('guideParams', newParams);
-  }
 
   var fastFunc = function(arg) {
     var distOnReturnVals = stochasticSurrogate(arg);  // don't condition on data here
@@ -195,7 +163,7 @@ var interCache = function(slowFunc, options, priorFunc) {
       console.log('  Estimated return value:', returnValMean);
       console.log('     Estimation variance:', returnValVariance);
       console.log('       True return value:', _trueReturnVal);
-      console.log('                  Params:', state.get('guideParams'));
+      // console.log('                  Params:', state.get('guideParams'));
     }
 
     if (returnValVariance > options.hyperparams.threshold) {
@@ -209,14 +177,12 @@ var interCache = function(slowFunc, options, priorFunc) {
         console.log("Ignoring " + arg);
       }
 
-      updateParams(arg, trueReturnVal);
       return {
         arg: arg,
         result: trueReturnVal,
         estimatedReturnValue: returnValMean,
         returnValVariance: returnValVariance,
-        isCacheHit: false,
-        params: state.get('guideParams') // Copy?
+        isCacheHit: false
       };
     } else {
       // console.log('hit');
@@ -225,8 +191,7 @@ var interCache = function(slowFunc, options, priorFunc) {
         result: returnValMean,
         estimatedReturnValue: returnValMean,
         returnValVariance: returnValVariance,
-        isCacheHit: true,
-        params: state.get('guideParams') // Copy?
+        isCacheHit: true
       };
     }
   };
