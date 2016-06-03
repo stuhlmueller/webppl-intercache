@@ -53,7 +53,7 @@ var linearOptions = {
     },
     threshold: 0.1
   },
-  initialRegressionVariance: 1
+  initialRegressionVariance: 5
 };
 
 var createPolynomialOptions = function(degree, ignoreFunction) {
@@ -65,8 +65,8 @@ var createPolynomialOptions = function(degree, ignoreFunction) {
         initialVarianceFunc: function(i) { return 3 }
       },
       prior: {
-        meanFunc: function(i) { return i },
-        varianceFunc: function(i) { return 5 }
+        meanFunc: function(i) { return 1 },
+        varianceFunc: function(i) { return 10 }
       }
     },
     hyperparams: linearOptions.hyperparams,
@@ -113,7 +113,7 @@ var generatePredictions = function(predictor, numInputs, minSupport, maxSupport,
   return mapReduce1(append, function(input) {
     console.log("Point " + input);
     return repeat(numSamples, function() {
-      return [input, sample(predictor(input))];
+      return [input, predictor(input)];
     });
   }, inputs);
 };
