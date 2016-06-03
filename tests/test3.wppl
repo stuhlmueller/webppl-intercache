@@ -44,7 +44,7 @@ var linearOptions = {
   },
   hyperparams: {
     optimization: {
-      stepSize: 0.01,
+      stepSize: 0.002,
       steps: 500,
       maxNumExamples: 20
     },
@@ -123,7 +123,7 @@ var runTestAndWriteResult = function(label, windowSize, slowFunc, priorFunction,
 	var fileName = 'tests/progressOverTime/' + label + '.json';
 	var cacheResult = interCache(slowFunc, options, priorFunction);
   var fastFunc = cacheResult.func;
-	var result = runTest(label, fastFunc, slowFunc, 300);
+	var result = runTest(label, fastFunc, slowFunc, 500);
 
 	// Accuracy over time for hits only
 	var hits = filter(function(r) { return r.fast.value.isCacheHit; }, result);
