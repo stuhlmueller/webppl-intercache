@@ -12,7 +12,7 @@ library(ggplot2)
 library(jsonlite)
 library(data.table)
 
-d<- fromJSON(readLines("quadratic-polynomial-4-threshold-0.8.json"))
+d<- fromJSON(readLines("quadratic-polynomial-4-threshold-0.2.json"))
 
 if (length(d$errorOverTime) == 0) {
   df<-bind_rows(
