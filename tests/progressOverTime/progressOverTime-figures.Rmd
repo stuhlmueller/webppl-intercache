@@ -107,7 +107,7 @@ ggplot(data=dfObserved, mapping=aes(x=input, y=output)) +
   geom_point() +
   geom_smooth(data=dfPredicted, color="blue") +
   geom_point(data=dfPredicted, color="green")
-#  geom_point(data=dfPredictedStDev, color="red")
+  geom_point(data=dfPredictedStDev, color="red")
 ```
 
 Predictions of the cache on evenly spaced data points, compared to real data
