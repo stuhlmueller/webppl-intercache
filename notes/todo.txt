@@ -1,15 +1,25 @@
-- merge restriction on number of data points
+[x] merge restriction on number of data points
 
 - try high-degree polynomial as estimator for quadratic function, but only provide training data for part of space
   - only supply data for smaller region; use high-degree polynomial
   -> variance is not higher for unseen part of space
   -> we suspect it's due to variational inference approximation
   -> try using hmc inference instead of variational inference
+     - adjust constants:
+       - explore lower regression variance
+       - higher threshold
+     - increase number of samples for hmc / or adjust hmc parameters otherwise
+       (empirical variance seems to be all over the map currently; noisy estimates?)
+     - do inference on regression variance (introduce regressionVarianceMean parameter)
 
 - continue learning with some probability even if predicted variance is low (so that we converge to correct function eventually if it's past of our approximating functions)
   - see if this works with data restriction (above)
+  -> ELBO scoreDiff not finite error is still happening
+     - try gd and adam instead of adagrad
+     - need to debug
+       - maybe we can come up with a minimal example in the future
 
-- 1pm Friday meeting
+Fri 11am pacific / 2pm east coast time; skype + screenshare
 
 --------------------------------------------------------------------
 
