@@ -51,9 +51,9 @@ var linearOptions = {
     prediction: {
       samples: 500
     },
-    threshold: 0.1
+    threshold: 1
   },
-  initialRegressionVariance: 5
+  initialRegressionVariance: 2.5
 };
 
 var createPolynomialOptions = function(degree, ignoreFunction) {
