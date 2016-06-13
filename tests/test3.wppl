@@ -112,8 +112,9 @@ var generatePredictions = function(predictor, numInputs, minSupport, maxSupport,
   });
   return mapReduce1(append, function(input) {
     console.log("Point " + input);
+    var distribution = predictor(input);
     return repeat(numSamples, function() {
-      return [input, predictor(input)];
+      return [input, sample(distribution)];
     });
   }, inputs);
 };
