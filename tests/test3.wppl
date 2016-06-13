@@ -44,7 +44,7 @@ var linearOptions = {
   },
   hyperparams: {
     optimization: {
-      stepSize: 0.002,
+      stepSize: 0.001,
       steps: 500,
       maxNumExamples: 20
     },
