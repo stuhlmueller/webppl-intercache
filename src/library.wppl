@@ -58,8 +58,8 @@ var selectN = function(n, inputs, outputs, forceIncludeLast) {
   if (forceIncludeLast) {
     // Secret randomness
     var indices = repeat(n - 1, function() { return Math.floor(util.random() * length) });
-    return [push(indexWith(inputs, indices), inputs[length - 1]),
-            push(indexWith(outputs, indices), outputs[length - 1])];
+    return [snoc(indexWith(inputs, indices), inputs[length - 1]),
+            snoc(indexWith(outputs, indices), outputs[length - 1])];
   }
   else {
     var indices = repeat(n, function() { return Math.floor(util.random() * length); });
