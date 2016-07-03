@@ -111,12 +111,13 @@ var generatePredictions = function(predictor, numInputs, minSupport, maxSupport,
   var inputs = repeatIndexed(numInputs, function (i) {
     return minSupport + i * distanceBetweenConsecutiveInputs;
   });
-  return mapReduce1(append, function(input) {
-    console.log("Point " + input);
-    return repeat(numSamples, function() {
-      return [input, sample(predictor(input))];
-    });
-  }, inputs);
+  return reduce(append, [],
+    map(function(input) {
+      console.log("Point " + input);
+      return repeat(numSamples, function() {
+        return [input, sample(predictor(input))];
+      });
+    }, inputs));
 };
 
 var runTestAndWriteResult = function(label, windowSize, slowFunc, priorFunction, options) {
