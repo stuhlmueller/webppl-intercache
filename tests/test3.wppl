@@ -141,7 +141,7 @@ var runTestAndWriteResult = function(label, windowSize, slowFunc, priorFunction,
 	// Average time spent for cache hits
 	var avgCacheLookupTime = sum(map(function(r) { return r.fast.runtimeInMilliseconds }, hits)) / hits.length;
 
-  var predictions = generatePredictions(cacheResult.predictor, /*numInputs*/ 51, /*minSupport*/ 0, /*maxSupport*/ 1, /*numSamples*/ 30);
+  var predictions = generatePredictions(cacheResult.predictor, /*numInputs*/ 51, /*minSupport*/ 0, /*maxSupport*/ 1, /*numSamples*/ 100);
 
   var args = map(function(r) { return r.fast.value.arg; }, result);
 
