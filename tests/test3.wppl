@@ -110,13 +110,14 @@ var generatePredictions = function(predictor, numInputs, minSupport, maxSupport,
   var inputs = repeatIndexed(numInputs, function (i) {
     return minSupport + i * distanceBetweenConsecutiveInputs;
   });
-  return mapReduce1(append, function(input) {
-    console.log("Point " + input);
-    var distribution = predictor(input);
-    return repeat(numSamples, function() {
-      return [input, sample(distribution)];
-    });
-  }, inputs);
+  return reduce(append, [],
+    map(function(input) {
+      console.log("Point " + input);
+      var distribution = predictor(input);
+      return repeat(numSamples, function() {
+        return [input, sample(distribution)];
+      });
+    }, inputs));
 };
 
 var runTestAndWriteResult = function(label, windowSize, slowFunc, priorFunction, options) {
