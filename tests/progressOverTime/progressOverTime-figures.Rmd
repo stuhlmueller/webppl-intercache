@@ -95,6 +95,9 @@ ggplot(df %>% filter(param%in%c('avgTime')),
 Average query time over a window of 20 calls, compared to global average of non-cached query (avgSlowTime) and average time of cache hits (avgCacheLookupTime).
 
 ```{r echo=FALSE, message=F, warning=F}
+getPredictedStDev <- function(d) {
+  json <- fromJSON(readLines(file_name))
+}
 dfObserved <- data.frame(input = d$observedInputs, 
                          output = d$observedOutputs)
 
@@ -106,7 +109,7 @@ dfPredictedStDev <- aggregate(dfPredicted, list(input=dfPredicted$input), sd)
 ggplot(data=dfObserved, mapping=aes(x=input, y=output)) +
   geom_point() +
   geom_smooth(data=dfPredicted, color="blue") +
-  geom_point(data=dfPredicted, color="green")
+  geom_point(data=dfPredicted, color="green") +
   geom_point(data=dfPredictedStDev, color="red")
 ```
 
@@ -154,5 +157,37 @@ ggplot(dIgnore,
   xlab('Input value bucket')+
   ylab('Hit rate') +
   facet_grid(label~epoch)
+```
 
+
+```{r echo=FALSE, message=F, warning=F}
+getIgnoreDataFromPredicted <- function(file_name, nickname) {
+  json <- fromJSON(readLines(file_name))
+  dPredicted <- data.frame(json$predictedOutputs) %>%
+  dplyr::rename(input = X1, output = X2)
+  
+  dPredictedStDev <- aggregate(dPredicted$output, by=list(dPredicted$input), FUN=sd) %>%
+    dplyr::rename(output=x)
+
+  dPredictedStDev <- mutate(dPredictedStDev, label=factor(nickname))
+  return(dfPredictedStDev)
+}
+
+dIgnoreFromPredicted <- bind_rows(
+  getIgnoreDataFromPredicted('quadratic-polynomial-4-threshold-0.2.json', '4, 0.2'),
+  getIgnoreDataFromPredicted('quadratic-polynomial-5-threshold-0.2.json', '5, 0.2'),
+  getIgnoreDataFromPredicted('quadratic-polynomial-4-threshold-0.5.json', '4, 0.5'),
+  getIgnoreDataFromPredicted('quadratic-polynomial-5-threshold-0.5.json', '5, 0.5'),
+  getIgnoreDataFromPredicted('quadratic-polynomial-4-threshold-0.8.json', '4, 0.8'),
+  getIgnoreDataFromPredicted('quadratic-polynomial-5-threshold-0.8.json', '5, 0.8')
+)
+
+ggplot(dIgnoreFromPredicted,
+       aes(x=input,# make x-axis INPUT VALUE
+           y=output))+
+  geom_point()+
+  geom_smooth(color="red", span=0.7)+
+  xlab('Input value bucket')+
+  ylab('Standard Dev Predicted')# +
+  # facet_grid(label)
 ```
