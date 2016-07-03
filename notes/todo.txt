@@ -6,20 +6,25 @@
   -> we suspect it's due to variational inference approximation
   -> try using hmc inference instead of variational inference
      - adjust constants:
-       - explore lower regression variance
-       - higher threshold
+       x explore lower regression variance
+       x higher threshold                
+     - do measurement not based on actually observed input values, but rather in post-pass ("predictive samples"; use 100 samples)
      - increase number of samples for hmc / or adjust hmc parameters otherwise
        (empirical variance seems to be all over the map currently; noisy estimates?)
+       - let's use 1000 samples, 200 burn-in
      - do inference on regression variance (introduce regressionVarianceMean parameter)
+       - regression variance is sampled
+       - use gamma distribution?
 
 - continue learning with some probability even if predicted variance is low (so that we converge to correct function eventually if it's past of our approximating functions)
   - see if this works with data restriction (above)
   -> ELBO scoreDiff not finite error is still happening
-     - try gd and adam instead of adagrad
+     x try gd and adam instead of adagrad -> no improvement
      - need to debug
-       - maybe we can come up with a minimal example in the future
-
-Fri 11am pacific / 2pm east coast time; skype + screenshare
+       - (maybe we can come up with a minimal example in the future)
+       - advance daipp branch, see if it still happens
+       - create a script that reproduces the error (maybe just our repo at a specific commit); write a short description; then we'll send it to paul
+         - can open an issue on intercache
 
 --------------------------------------------------------------------
 
