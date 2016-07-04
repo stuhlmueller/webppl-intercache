@@ -120,7 +120,7 @@ var interCache = function(slowFunc, options, priorFunc) {
 
   var distOnReturnVals = function(arg) {
     var f = priorFunc(options.funcGeneration);
-    var regressionVariance = (options.initialRegressionVariance);  
+    var regressionVariance = gamma(options.regressionVarianceGammaShape, options.regressionVarianceGammaScale);
     
     {
       // Soft conditioning on input-output data

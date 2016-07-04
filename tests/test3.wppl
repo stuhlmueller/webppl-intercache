@@ -70,7 +70,8 @@ var createPolynomialOptions = function(degree, ignoreFunction) {
       }
     },
     hyperparams: linearOptions.hyperparams,
-    initialRegressionVariance: linearOptions.initialRegressionVariance,
+    regressionVarianceGammaShape: 3,
+    regressionVarianceGammaScale: 2,
     ignoreDataPointPredicate: ignoreFunction
   };
 };
