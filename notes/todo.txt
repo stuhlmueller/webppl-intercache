@@ -1,3 +1,5 @@
+- summarize the current state of things for meeting with noah, including what we've done so far (look at done.txt file as well)
+
 - try high-degree polynomial as estimator for quadratic function, but only provide training data for part of space
   - only supply data for smaller region; use high-degree polynomial
   -> variance is not higher for unseen part of space
@@ -5,16 +7,18 @@
   -> try using hmc inference instead of variational inference
      - adjust constants:
        x explore lower regression variance
-       x higher threshold                
-     - do measurement not based on actually observed input values, but rather in post-pass ("predictive samples"; use 100 samples)
-     - increase number of samples for hmc / or adjust hmc parameters otherwise
+       x higher threshold
+     x do measurement not based on actually observed input values, but rather in post-pass ("predictive samples"; use 100 samples)
+       - use 1000 samples?
+         try to understand why predicted variance doesn't look smoother
+     x increase number of samples for hmc / or adjust hmc parameters otherwise
        (empirical variance seems to be all over the map currently; noisy estimates?)
-       - let's use 1000 samples, 200 burn-in
-     - do inference on regression variance (introduce regressionVarianceMean parameter)
-       - regression variance is sampled
-       - use gamma distribution?
+       x let's use 1000 samples, 200 burn-in
+     x do inference on regression variance (introduce regressionVarianceMean parameter)
+       x regression variance is sampled
+       x use gamma distribution?
 
-- continue learning with some probability even if predicted variance is low (so that we converge to correct function eventually if it's past of our approximating functions)
+- continue learning with some probability even if predicted variance is low (so that we converge to correct function eventually if it's part of our approximating functions)
   - see if this works with data restriction (above)
   -> ELBO scoreDiff not finite error is still happening
      x try gd and adam instead of adagrad -> no improvement
@@ -22,7 +26,10 @@
        - (maybe we can come up with a minimal example in the future)
        - advance daipp branch, see if it still happens
        - create a script that reproduces the error (maybe just our repo at a specific commit); write a short description; then we'll send it to paul
-         - can open an issue on intercache
+         x can open an issue on intercache
+  - show that we converge perfectly to the correct function eventually (e.g. if true func is degree-2 polynomial, and approximating family is as well)
+
+- maybe play with demo.wppl some more, see if behavior is surprising in any way
 
 --------------------------------------------------------------------
 
