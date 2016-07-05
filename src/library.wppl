@@ -175,7 +175,7 @@ var interCache = function(slowFunc, options, priorFunc) {
     state.set('run', { samplePrediction: false, argument: null });
     var newParams = Optimize(distOnFuncs, {
       steps: options.hyperparams.optimization.steps,
-      method: {adagrad: {stepSize: options.hyperparams.optimization.stepSize }},
+      optMethod: {adagrad: {stepSize: options.hyperparams.optimization.stepSize }},
       estimator: 'ELBO',
       params: state.get('guideParams')
     });
