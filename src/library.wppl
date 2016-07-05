@@ -8,6 +8,10 @@ var printTime = function(f) {
   return obj.value;
 }
 
+var push = function(xs, x) {
+  return xs.concat([x]);
+}
+
 var mean = function(erp) {
   return expectation(erp, function(x) {return x;});
 };
