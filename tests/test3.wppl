@@ -80,25 +80,25 @@ var runTest = function(label, fastFunc, slowFunc, numberOfCalls) {
 
   var indices = range(numberOfCalls);
   return map(function(index) {
-  	console.log('Starting iteration ' + index + ', test ' + label);
-  	var p = uniform(0, 1);
-  	var slowTimeAndValue = timeit(function() { return slowFunc(p); });
-  	var fastTimeAndValue = timeit(function() { return fastFunc(p); });
+    console.log('Starting iteration ' + index + ', test ' + label);
+    var p = uniform(0, 1);
+    var slowTimeAndValue = timeit(function() { return slowFunc(p); });
+    var fastTimeAndValue = timeit(function() { return fastFunc(p); });
 
-  	return {
-  		slow: slowTimeAndValue,
-  		fast: fastTimeAndValue
-  	}
+    return {
+      slow: slowTimeAndValue,
+      fast: fastTimeAndValue
+    }
   }, indices);
 };
 
 var mapWindowMean = function(list, windowSize, fn) {
-	var indices = range(list.length - windowSize);
-	return map(function(i) {
-		// For each index i, get the window and compute the mean on the window
-		var window = map(fn, list.slice(i, i + windowSize));
-		return sum(window) / windowSize;
-	}, indices)
+  var indices = range(list.length - windowSize);
+  return map(function(i) {
+    // For each index i, get the window and compute the mean on the window
+    var window = map(fn, list.slice(i, i + windowSize));
+    return sum(window) / windowSize;
+  }, indices)
 };
 
 var generatePredictions = function(predictor, numInputs, minSupport, maxSupport, numSamples) {
@@ -119,39 +119,39 @@ var generatePredictions = function(predictor, numInputs, minSupport, maxSupport,
 };
 
 var runTestAndWriteResult = function(label, windowSize, slowFunc, priorFunction, options) {
-	var fileName = 'tests/progressOverTime/' + label + '.json';
-	var cacheResult = interCache(slowFunc, options, priorFunction);
+  var fileName = 'tests/progressOverTime/' + label + '.json';
+  var cacheResult = interCache(slowFunc, options, priorFunction);
   var fastFunc = cacheResult.func;
-	var result = runTest(label, fastFunc, slowFunc, 300);
+  var result = runTest(label, fastFunc, slowFunc, 300);
 
-	// Accuracy over time for hits only
-	var hits = filter(function(r) { return r.fast.value.isCacheHit; }, result);
-	var errorOverTime = map(function(r) { return Math.abs(r.slow.value - r.fast.value.result); }, hits);
+  // Accuracy over time for hits only
+  var hits = filter(function(r) { return r.fast.value.isCacheHit; }, result);
+  var errorOverTime = map(function(r) { return Math.abs(r.slow.value - r.fast.value.result); }, hits);
 
-	// fraction of hits in a sliding window
-	var hitRate = mapWindowMean(result, windowSize, function(r) { return r.fast.value.isCacheHit ? 1 : 0 });
+  // fraction of hits in a sliding window
+  var hitRate = mapWindowMean(result, windowSize, function(r) { return r.fast.value.isCacheHit ? 1 : 0 });
 
-	// Average time in a sliding window
-	var avgTime = mapWindowMean(result, windowSize, function(r) { return r.fast.runtimeInMilliseconds });
+  // Average time in a sliding window
+  var avgTime = mapWindowMean(result, windowSize, function(r) { return r.fast.runtimeInMilliseconds });
 
-	// Average for slow function over total span
-	var avgSlowTime = sum(map(function(r) { return r.slow.runtimeInMilliseconds }, result)) / result.length;
+  // Average for slow function over total span
+  var avgSlowTime = sum(map(function(r) { return r.slow.runtimeInMilliseconds }, result)) / result.length;
 
-	// Average time spent for cache hits
-	var avgCacheLookupTime = sum(map(function(r) { return r.fast.runtimeInMilliseconds }, hits)) / hits.length;
+  // Average time spent for cache hits
+  var avgCacheLookupTime = sum(map(function(r) { return r.fast.runtimeInMilliseconds }, hits)) / hits.length;
 
   var predictions = generatePredictions(cacheResult.predictor, /*numInputs*/ 51, /*minSupport*/ 0, /*maxSupport*/ 1, /*numSamples*/ 30)
 
-	json.write(fileName, {
-		errorOverTime: errorOverTime,
-		hitRate: hitRate,
-		avgTime: avgTime,
-		avgSlowTime: avgSlowTime,
-		avgCacheLookupTime: avgCacheLookupTime,
+  json.write(fileName, {
+    errorOverTime: errorOverTime,
+    hitRate: hitRate,
+    avgTime: avgTime,
+    avgSlowTime: avgSlowTime,
+    avgCacheLookupTime: avgCacheLookupTime,
     observedInputs: cacheResult.data.inputs,
     observedOutputs: cacheResult.data.outputs,
     predictedOutputs: predictions
-	});
+  });
 };
 
 // runTestAndWriteResult('all-data', /*windowSize*/ 30, makeLinearFunction, linearOptions);

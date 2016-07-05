@@ -58,3 +58,5 @@ x then re-examine:
 - restrict how much data to learn from so that runtime doesn't slow down linearly (select a random subset of previous data? always include current data point)
   - more efficiently select subset: don't zip data first, get subset directly, maybe by sampling indices first
     - secret randomness: Math.floor(util.random() * 10);
+
+[x] merge restriction on number of data points

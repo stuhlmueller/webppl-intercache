@@ -1,0 +1,58 @@
+// webppl tests/demo.wppl --require webppl-timeit --require webppl-json --require webppl-array-utils --require .
+
+var N = 15;
+
+var slowBinomial = function(p) {
+  return Enumerate(function(){
+    var xs = repeat(N, function(){ return flip(p); });
+    return sum(xs);
+  });
+};
+
+// this is the function we want to speed up by caching
+var slowBinomialMean = function(p) {
+  var x = mean(slowBinomial(p/10))
+  return p * p;
+};
+
+var options = {
+  funcGeneration: {
+    degree: 4,
+    guide: {
+      initialMeanFunc: function(i) { return 0 },
+      initialVarianceFunc: function(i) { return 3 }
+    },
+    prior: {
+      meanFunc: function(i) { return 0 },
+      varianceFunc: function(i) { return 5 }
+    }
+  },
+  hyperparams: {
+    optimization: {
+      stepSize: 0.01,
+      steps: 500,
+      maxNumExamples: 20
+    },
+    prediction: {
+      samples: 500
+    },
+    threshold: 0.1
+  },
+  initialRegressionVariance: .05,
+  ignoreDataPointPredicate: null
+};
+
+var cached = interCache(slowBinomialMean, options, makePolynomialFunction);
+
+var fastFunc = cached.func;
+
+
+repeat(100, function() {
+  console.log(_.omit(fastFunc(1), 'params'));
+  console.log(_.omit(fastFunc(2), 'params'));
+  console.log('');
+});
+
+repeat(10, function() {
+  console.log(_.omit(fastFunc(9), 'params'));
+});
