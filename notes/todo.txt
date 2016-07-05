@@ -1,5 +1,3 @@
-[x] merge restriction on number of data points
-
 - try high-degree polynomial as estimator for quadratic function, but only provide training data for part of space
   - only supply data for smaller region; use high-degree polynomial
   -> variance is not higher for unseen part of space
