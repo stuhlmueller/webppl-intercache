@@ -29,7 +29,7 @@ var modelAnalysisCached = function(){
 	/////////////////////////////////////
 	// var t0 = genUtils.getTime()
 	////SLOW FUNCTION////
- 	var predictionERP = speaker2Cached(speakerOptimality)
+ 	var predictionERP = speaker2Cached(speakerOptimality).estimatedReturnValue;
  	
  	/////////////////////
 	// var t1 = genUtils.getTime()
@@ -64,7 +64,7 @@ posterior
 // genUtils.erpWriter(posterior, outfile)
 // console.log('wrote to... ' + outfile )
 
-var speaker2Cached = interCache(speaker2, opts, makePolynomialFunction);
+var speaker2Cached = interCache(speaker2, opts, makePolynomialFunction).func;
 console.log("cached version");
 
 var posteriorCached = MCMC(modelAnalysisCached, {samples: mhiter, verbose:true, burnin:burn});
