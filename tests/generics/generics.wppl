@@ -1,24 +1,20 @@
 // to run: webppl generics.wppl --require gen-utils
 
 var modelAnalysis = function(){
+	console.log('call to slow func')
 	// speakerOptimality is our continuous variable that wants to be intercached
-	var speakerOptimality = uniform(0,20);
+	var speakerOptimality = uniform(0, 20);
  	var speakerScore = scoreSpeaker2(speakerOptimality);
-	factor(speakerScore);
-	query.add(["speakerOptimality","na","na","na"], speakerOptimality);
-	return query;
+	return {scr: speakerScore, speakerOptimality: speakerOptimality};
 }
 
-var mhiter = 2
-var burn = mhiter/2
-console.log('doing the full bayesian dance...')
+console.log('start sampling..')
 
-var posterior = MCMC(modelAnalysis, {samples: mhiter, verbose:true, burnin:burn})
+var samples = repeat(5, modelAnalysis)
 
-console.log('FBT complete')
-
+samples
 // posterior
-posterior
+
 // var outfile = 'results/generics-previter'+previter+
 // 				'_prevprioriter'+prevprioriter+
 // 				'-IncrMH'+ mhiter+'_burn'+burn+'.csv'
