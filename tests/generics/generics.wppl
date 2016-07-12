@@ -6,6 +6,30 @@ var modelAnalysis = function(){
 	var t0 = genUtils.getTime()
 	////SLOW FUNCTION////
  	var predictionERP = speaker2(speakerOptimality)
+
+ 	/////////////////////
+	// var t1 = genUtils.getTime()
+	// console.log("slow function call complete in " + (t1-t0) + " ms")
+	
+	var scr = sum(map(function(d) {
+				    return predictionERP.score([], responseDictionary[d])
+						}, responseData))
+	factor(scr)
+
+	query.add(["generic_linked",property, k, "0"], 
+				Math.exp(predictionERP.score([], "generic is true")))
+	query.add(["speakerOptimality","na","na","na"], speakerOptimality)
+
+	return query
+}
+
+var modelAnalysis = function(){
+	// speakerOptimality is our continuous variable that wants to be intercached
+	var speakerOptimality = uniform(0,20)
+	/////////////////////////////////////
+	var t0 = genUtils.getTime()
+	////SLOW FUNCTION////
+ 	var predictionERP = speaker2(speakerOptimality)
  	
  	/////////////////////
 	// var t1 = genUtils.getTime()
