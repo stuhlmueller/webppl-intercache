@@ -36,6 +36,9 @@
 - test with polynomial distOnFuncs on mh's data
   x mh: fix prevalence and prior so that speaker2 is slowFunc of 1 argument
   - apply intercache to speaker2 with prevalence and prior fixed
+    - test with various hyperparameters (on modelAnalysis and modelAnalysisCached)
+    - compare: accuracy (compare to grid-search results), speed (time it), hitrate
+    - mh: make ground truth figure of score vs. speakerOptimality
   - (generalize our cache to multiple arguments)
   - (try with slowFunc of multiple arguments (prevalence, prior, speakerOptimality))
 
