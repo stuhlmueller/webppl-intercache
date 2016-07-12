@@ -68,6 +68,7 @@ var speaker2Cached = interCache(speaker2, opts, makePolynomialFunction).func;
 console.log("cached version");
 
 var posteriorCached = MCMC(modelAnalysisCached, {samples: mhiter, verbose:true, burnin:burn});
+console.log("done")
 
 //// below is the code for doing a for-loop
 // var modelAnalysis = function(){
