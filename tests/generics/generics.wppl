@@ -9,7 +9,7 @@ var modelAnalysis = function(){
 	return query;
 }
 
-var modelAnalysis = function(){
+var modelAnalysisCached = function(){
 	// speakerOptimality is our continuous variable that wants to be intercached
 	var speakerOptimality = uniform(0,20);
  	var speakerScore = speaker2Cached(speakerOptimality).estimatedReturnValue;
