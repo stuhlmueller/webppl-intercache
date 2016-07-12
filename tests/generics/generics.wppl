@@ -1,50 +1,42 @@
 // to run: webppl generics.wppl --require gen-utils --require .
 var modelAnalysis = function(){
 	// speakerOptimality is our continuous variable that wants to be intercached
-	var speakerOptimality = uniform(0,20)
+	var speakerOptimality = uniform(0,20);
+
 	/////////////////////////////////////
 	// var t0 = genUtils.getTime()
 	////SLOW FUNCTION////
- 	var predictionERP = speaker2(speakerOptimality)
-
+ 	var speakerScore = scoreSpeaker2(speakerOptimality);
+ 	// console.log(speakerScore)
  	/////////////////////
 	// var t1 = genUtils.getTime()
 	// console.log("slow function call complete in " + (t1-t0) + " ms")
 	
-	var scr = sum(map(function(d) {
-				    return predictionERP.score([], responseDictionary[d])
-						}, responseData))
-	factor(scr)
+	factor(speakerScore);
 
-	query.add(["generic_linked",property, k, "0"], 
-				Math.exp(predictionERP.score([], "generic is true")))
-	query.add(["speakerOptimality","na","na","na"], speakerOptimality)
+	query.add(["speakerOptimality","na","na","na"], speakerOptimality);
 
-	return query
+	return query;
 }
 
 var modelAnalysisCached = function(){
 	// speakerOptimality is our continuous variable that wants to be intercached
-	var speakerOptimality = uniform(0,20)
+	var speakerOptimality = uniform(0,20);
+
 	/////////////////////////////////////
 	// var t0 = genUtils.getTime()
 	////SLOW FUNCTION////
- 	var predictionERP = speaker2Cached(speakerOptimality).estimatedReturnValue;
- 	
+ 	var speakerScore = speaker2Cached(speakerOptimality).estimatedReturnValue;
+ 	// console.log(speakerScore)
  	/////////////////////
 	// var t1 = genUtils.getTime()
 	// console.log("slow function call complete in " + (t1-t0) + " ms")
 	
-	var scr = sum(map(function(d) {
-				    return predictionERP.score(responseDictionary[d])
-						}, responseData))
-	factor(scr)
+	factor(speakerScore);
 
-	query.add(["generic_linked",property, k, "0"], 
-				Math.exp(predictionERP.score("generic is true")))
-	query.add(["speakerOptimality","na","na","na"], speakerOptimality)
+	query.add(["speakerOptimality","na","na","na"], speakerOptimality);
 
-	return query
+	return query;
 }
 
 var mhiter = 2
@@ -56,7 +48,7 @@ var posterior = MCMC(modelAnalysis, {samples: mhiter, verbose:true, burnin:burn}
 console.log('FBT complete')
 
 // posterior
-posterior
+// posterior
 // var outfile = 'results/generics-previter'+previter+
 // 				'_prevprioriter'+prevprioriter+
 // 				'-IncrMH'+ mhiter+'_burn'+burn+'.csv'
@@ -64,7 +56,7 @@ posterior
 // genUtils.erpWriter(posterior, outfile)
 // console.log('wrote to... ' + outfile )
 
-var speaker2Cached = interCache(speaker2, opts, makePolynomialFunction).func;
+var speaker2Cached = interCache(scoreSpeaker2, opts, makePolynomialFunction).func;
 console.log("cached version");
 
 var posteriorCached = MCMC(modelAnalysisCached, {samples: mhiter, verbose:true, burnin:burn});
