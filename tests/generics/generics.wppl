@@ -11,12 +11,12 @@ var modelAnalysis = function(){
 	console.log("slow function call complete in " + (t1-t0) + " ms")
 	
 	var scr = sum(map(function(d) {
-				    return predictionERP.score([], responseDictionary[d])
+				    return predictionERP.score(responseDictionary[d])
 						}, responseData))
 	factor(scr)
 
 	query.add(["generic_linked",property, k, "0"], 
-				Math.exp(predictionERP.score([], "generic is true")))
+				Math.exp(predictionERP.score("generic is true")))
 	query.add(["speakerOptimality","na","na","na"], speakerOptimality)
 
 	return query
@@ -31,13 +31,13 @@ var posterior = MCMC(modelAnalysis, {samples: mhiter, verbose:true, burnin:burn}
 console.log('FBT complete')
 
 // posterior
-// posterior
-var outfile = 'results/generics-previter'+previter+
-				'_prevprioriter'+prevprioriter+
-				'-IncrMH'+ mhiter+'_burn'+burn+'.csv'
+posterior
+// var outfile = 'results/generics-previter'+previter+
+// 				'_prevprioriter'+prevprioriter+
+// 				'-IncrMH'+ mhiter+'_burn'+burn+'.csv'
 
-genUtils.erpWriter(posterior, outfile)
-console.log('wrote to... ' + outfile )
+// genUtils.erpWriter(posterior, outfile)
+// console.log('wrote to... ' + outfile )
 
 
 //// below is the code for doing a for-loop
