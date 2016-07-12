@@ -1,41 +1,20 @@
 // to run: webppl generics.wppl --require gen-utils --require .
+
 var modelAnalysis = function(){
 	// speakerOptimality is our continuous variable that wants to be intercached
 	var speakerOptimality = uniform(0,20);
-
-	/////////////////////////////////////
-	// var t0 = genUtils.getTime()
-	////SLOW FUNCTION////
  	var speakerScore = scoreSpeaker2(speakerOptimality);
- 	// console.log(speakerScore)
- 	/////////////////////
-	// var t1 = genUtils.getTime()
-	// console.log("slow function call complete in " + (t1-t0) + " ms")
-	
 	factor(speakerScore);
-
 	query.add(["speakerOptimality","na","na","na"], speakerOptimality);
-
 	return query;
 }
 
-var modelAnalysisCached = function(){
+var modelAnalysis = function(){
 	// speakerOptimality is our continuous variable that wants to be intercached
 	var speakerOptimality = uniform(0,20);
-
-	/////////////////////////////////////
-	// var t0 = genUtils.getTime()
-	////SLOW FUNCTION////
  	var speakerScore = speaker2Cached(speakerOptimality).estimatedReturnValue;
- 	// console.log(speakerScore)
- 	/////////////////////
-	// var t1 = genUtils.getTime()
-	// console.log("slow function call complete in " + (t1-t0) + " ms")
-	
 	factor(speakerScore);
-
 	query.add(["speakerOptimality","na","na","na"], speakerOptimality);
-
 	return query;
 }
 
