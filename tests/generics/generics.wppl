@@ -1,9 +1,9 @@
-// to run: webppl generics.wppl --require gen-utils
+// to run: webppl generics.wppl --require gen-utils --require .
 var modelAnalysis = function(){
 	// speakerOptimality is our continuous variable that wants to be intercached
 	var speakerOptimality = uniform(0,20)
 	/////////////////////////////////////
-	var t0 = genUtils.getTime()
+	// var t0 = genUtils.getTime()
 	////SLOW FUNCTION////
  	var predictionERP = speaker2(speakerOptimality)
 
@@ -23,13 +23,13 @@ var modelAnalysis = function(){
 	return query
 }
 
-var modelAnalysis = function(){
+var modelAnalysisCached = function(){
 	// speakerOptimality is our continuous variable that wants to be intercached
 	var speakerOptimality = uniform(0,20)
 	/////////////////////////////////////
-	var t0 = genUtils.getTime()
+	// var t0 = genUtils.getTime()
 	////SLOW FUNCTION////
- 	var predictionERP = speaker2(speakerOptimality)
+ 	var predictionERP = speaker2Cached(speakerOptimality)
  	
  	/////////////////////
 	// var t1 = genUtils.getTime()
@@ -64,6 +64,10 @@ var outfile = 'results/generics-previter'+previter+
 genUtils.erpWriter(posterior, outfile)
 console.log('wrote to... ' + outfile )
 
+var speaker2Cached = interCache(speaker2, opts, makePolynomialFunction);
+console.log("cached version");
+
+var posteriorCached = MCMC(modelAnalysisCached, {samples: mhiter, verbose:true, burnin:burn});
 
 //// below is the code for doing a for-loop
 // var modelAnalysis = function(){
